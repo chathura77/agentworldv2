@@ -1,0 +1,876 @@
+:root {
+  color-scheme: light;
+  font-family:
+    Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+    sans-serif;
+  background: #eef1f4;
+  color: #18212f;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+}
+
+button,
+input {
+  font: inherit;
+}
+
+button {
+  align-items: center;
+  background: #ffffff;
+  border: 1px solid #cbd4df;
+  border-radius: 8px;
+  color: #18212f;
+  cursor: pointer;
+  display: inline-flex;
+  font-size: 0.88rem;
+  font-weight: 650;
+  gap: 0.4rem;
+  justify-content: center;
+  min-height: 2.35rem;
+  padding: 0 0.72rem;
+}
+
+button:hover {
+  background: #f7fafc;
+  border-color: #8da0b8;
+}
+
+.appShell {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: minmax(0, 1fr) 19rem;
+  min-height: 100vh;
+  padding: 1rem;
+}
+
+.worldSurface,
+.sidePanel {
+  background: #ffffff;
+  border: 1px solid #d9e0e8;
+  border-radius: 8px;
+  box-shadow: 0 12px 36px rgba(32, 45, 62, 0.08);
+}
+
+.worldSurface {
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  min-width: 0;
+  overflow: hidden;
+}
+
+.controlPanel {
+  border-bottom: 1px solid #d9e0e8;
+  display: grid;
+  gap: 0.75rem;
+  max-height: 26rem;
+  overflow: auto;
+  padding: 0.75rem;
+}
+
+.buttonGrid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.controlSections {
+  display: grid;
+  gap: 0.75rem;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.presetStrip {
+  align-items: center;
+  background:
+    linear-gradient(135deg, rgba(28, 98, 153, 0.08), rgba(15, 118, 110, 0.12)),
+    #f7fafc;
+  border: 1px solid #dce3eb;
+  border-radius: 10px;
+  display: grid;
+  gap: 0.75rem;
+  grid-template-columns: minmax(0, 1fr) auto;
+  padding: 0.8rem;
+}
+
+.presetSummary p {
+  color: #4d6076;
+  font-size: 0.8rem;
+  line-height: 1.4;
+  margin: 0.22rem 0 0;
+}
+
+.presetKicker {
+  color: #1b5e8a;
+  font-size: 0.72rem;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.presetButtons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  justify-content: flex-end;
+}
+
+.controlSection {
+  background: #f8fafc;
+  border: 1px solid #dce3eb;
+  border-radius: 10px;
+  display: grid;
+  gap: 0.7rem;
+  padding: 0.75rem;
+}
+
+.controlSection[open] {
+  background: #f8fafc;
+}
+
+.sectionSummary {
+  align-items: center;
+  cursor: pointer;
+  display: grid;
+  gap: 0.65rem;
+  grid-template-columns: minmax(0, 1fr) auto;
+  list-style: none;
+}
+
+.sectionSummary::-webkit-details-marker {
+  display: none;
+}
+
+.sectionHeader h2 {
+  font-size: 0.95rem;
+  margin: 0 0 0.18rem;
+}
+
+.sectionHeader p {
+  color: #64748b;
+  font-size: 0.78rem;
+  margin: 0;
+}
+
+.sectionBadge {
+  align-items: center;
+  background: #ffffff;
+  border: 1px solid #d5dee8;
+  border-radius: 999px;
+  color: #425268;
+  display: inline-flex;
+  font-size: 0.74rem;
+  font-weight: 800;
+  min-height: 2rem;
+  padding: 0.2rem 0.7rem;
+  text-align: right;
+}
+
+.fieldGrid {
+  display: grid;
+  gap: 0.55rem;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.rangeControl,
+.numberControl,
+.toggleField,
+.snapshotControl {
+  background: #f7fafc;
+  border: 1px solid #dce3eb;
+  border-radius: 8px;
+  display: grid;
+  gap: 0.45rem;
+  min-width: 0;
+  padding: 0.48rem 0.58rem;
+}
+
+.rangeControl {
+  align-items: center;
+  grid-template-columns: minmax(6.2rem, auto) minmax(5rem, 1fr) 2.6rem;
+}
+
+.numberControl,
+.toggleField {
+  align-items: center;
+  grid-template-columns: minmax(0, 1fr) auto;
+}
+
+.snapshotControl {
+  grid-column: 1 / -1;
+}
+
+.snapshotControl textarea {
+  background: #ffffff;
+  border: 1px solid #cbd4df;
+  border-radius: 6px;
+  color: #18212f;
+  font-family:
+    "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+  font-size: 0.78rem;
+  line-height: 1.45;
+  min-height: 10rem;
+  padding: 0.55rem 0.6rem;
+  resize: vertical;
+  width: 100%;
+}
+
+.fieldLabel {
+  align-items: center;
+  color: #47566a;
+  display: inline-flex;
+  font-size: 0.78rem;
+  font-weight: 700;
+  gap: 0.35rem;
+  white-space: nowrap;
+  white-space: nowrap;
+}
+
+.rangeControl input {
+  accent-color: #2f6eea;
+  min-width: 0;
+  width: 100%;
+}
+
+.rangeControl output {
+  color: #18212f;
+  font-size: 0.84rem;
+  font-weight: 800;
+  text-align: right;
+}
+
+.numberControl input {
+  border: 1px solid #cbd4df;
+  border-radius: 6px;
+  color: #18212f;
+  padding: 0.35rem 0.45rem;
+  width: 5.5rem;
+}
+
+.toggleField {
+  background: #ffffff;
+  color: #18212f;
+  justify-content: space-between;
+  min-height: 0;
+}
+
+.toggleField.active {
+  background: #dff4ea;
+  border-color: #8ed3b1;
+  color: #175a3d;
+}
+
+.toggleRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.snapshotActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.snapshotStatus {
+  color: #47566a;
+  font-size: 0.78rem;
+  margin: 0;
+}
+
+.toggleButton.active {
+  background: #dfe9ff;
+  border-color: #7ca2ee;
+  color: #174fba;
+}
+
+.worldCanvas {
+  display: grid;
+  min-height: 0;
+  padding: 0.75rem;
+  position: relative;
+}
+
+.pixiHost {
+  aspect-ratio: 1;
+  margin: auto;
+  max-height: calc(100vh - 15.5rem);
+  max-width: min(100%, calc(100vh - 15.5rem));
+  min-height: min(32rem, 72vh);
+  min-width: min(32rem, 72vh);
+  overflow: hidden;
+  position: relative;
+  width: 100%;
+}
+
+.pixiHost canvas {
+  display: block;
+  height: 100%;
+  width: 100%;
+}
+
+.relationshipLegend {
+  align-items: center;
+  bottom: 1rem;
+  color: #47566a;
+  display: inline-flex;
+  font-size: 0.78rem;
+  font-weight: 750;
+  gap: 0.38rem;
+  position: absolute;
+  right: 1rem;
+}
+
+.debugLegend {
+  align-items: center;
+  bottom: 1rem;
+  color: #47566a;
+  display: inline-flex;
+  font-size: 0.78rem;
+  font-weight: 750;
+  gap: 0.38rem;
+  left: 1rem;
+  position: absolute;
+}
+
+.energyLegend,
+.fertilityLegend,
+.intentLegend,
+.memoryLegend {
+  align-items: center;
+  color: #47566a;
+  display: inline-flex;
+  font-size: 0.78rem;
+  font-weight: 750;
+  gap: 0.38rem;
+  position: absolute;
+}
+
+.energyLegend {
+  bottom: 3rem;
+  right: 1rem;
+}
+
+.fertilityLegend {
+  bottom: 5rem;
+  left: 1rem;
+}
+
+.intentLegend {
+  bottom: 7rem;
+  left: 1rem;
+}
+
+.memoryLegend {
+  bottom: 9rem;
+  left: 1rem;
+}
+
+.cellInspector {
+  background: rgba(248, 250, 252, 0.94);
+  border: 1px solid #d4dde7;
+  border-radius: 10px;
+  color: #18212f;
+  left: 1rem;
+  max-width: min(22rem, calc(100% - 2rem));
+  padding: 0.65rem 0.75rem;
+  position: absolute;
+  top: 1rem;
+}
+
+.cellInspector h2 {
+  font-size: 0.92rem;
+  margin: 0 0 0.35rem;
+}
+
+.cellInspector p {
+  color: #47566a;
+  font-size: 0.78rem;
+  line-height: 1.4;
+  margin: 0.18rem 0;
+}
+
+.cellInspectorActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+  margin-top: 0.55rem;
+}
+
+.cellInspectorButton {
+  background: rgba(255, 255, 255, 0.96);
+  border: 1px solid #c5d2e0;
+  border-radius: 999px;
+  color: #28415a;
+  font-size: 0.72rem;
+  font-weight: 750;
+  padding: 0.3rem 0.6rem;
+}
+
+.cellInspectorButton.active {
+  background: #dff4ea;
+  border-color: #5fb38c;
+  color: #155b41;
+}
+
+.legendDot {
+  border-radius: 999px;
+  display: inline-block;
+  height: 0.65rem;
+  width: 0.65rem;
+}
+
+.legendSwatch {
+  border-radius: 4px;
+  display: inline-block;
+  height: 0.7rem;
+  width: 0.7rem;
+}
+
+.leaderDot {
+  background: #9b7a05;
+}
+
+.partnerDot {
+  background: #ffe070;
+  border: 1px solid #caa900;
+}
+
+.energyLowDot {
+  background: #ff5a5a;
+}
+
+.energySteadyDot {
+  background: #f2c14d;
+}
+
+.energySurplusDot {
+  background: #46c27d;
+}
+
+.selectedSwatch {
+  background: rgba(31, 157, 115, 0.2);
+  border: 2px solid #1f9d73;
+}
+
+.pinnedSwatch {
+  background: rgba(15, 118, 110, 0.12);
+  border: 2px solid #0f766e;
+}
+
+.observedSwatch {
+  background: rgba(59, 130, 246, 0.12);
+  border: 2px solid #3b82f6;
+}
+
+.targetSwatch {
+  background: rgba(245, 158, 11, 0.12);
+  border: 2px solid #f59e0b;
+}
+
+.trailSwatch {
+  background: rgba(124, 58, 237, 0.12);
+  border: 2px solid #7c3aed;
+}
+
+.facingSwatch {
+  background: rgba(15, 118, 110, 0.12);
+  border: 2px solid #0f766e;
+}
+
+.fertilityLowSwatch {
+  background: #f3e6d8;
+  border: 1px solid #cfb894;
+}
+
+.fertilityHighSwatch {
+  background: #daf2d9;
+  border: 1px solid #8fbf8c;
+}
+
+.intentSwatch {
+  background: rgba(249, 115, 22, 0.16);
+  border: 2px solid #f97316;
+}
+
+.plantMemorySwatch {
+  background: #eaf3ff;
+  border: 1px solid #8bb7f2;
+}
+
+.creatureMemorySwatch {
+  background: #e7f8f2;
+  border: 1px solid #7fc5aa;
+}
+
+.advancedWorld {
+  background: #9fc3df;
+  display: grid;
+  min-height: 0;
+  overflow: hidden;
+  position: relative;
+}
+
+.advancedLoading {
+  align-items: center;
+  background: #9fc3df;
+  color: #172033;
+  display: grid;
+  font-weight: 800;
+  min-height: min(70vh, calc(100vh - 14.5rem));
+  place-items: center;
+}
+
+.advancedViewport {
+  min-height: min(70vh, calc(100vh - 14.5rem));
+  width: 100%;
+}
+
+.advancedViewport canvas {
+  display: block;
+  height: 100%;
+  width: 100%;
+}
+
+.advancedHud {
+  align-items: center;
+  background: rgba(15, 23, 42, 0.72);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 8px;
+  bottom: 1rem;
+  color: #f8fafc;
+  display: inline-flex;
+  font-size: 0.78rem;
+  font-weight: 750;
+  gap: 0.55rem;
+  left: 1rem;
+  padding: 0.45rem 0.65rem;
+  position: absolute;
+}
+
+.sidePanel {
+  align-content: start;
+  display: grid;
+  gap: 1rem;
+  padding: 1rem;
+}
+
+.brandRow {
+  align-items: center;
+  display: flex;
+  gap: 0.55rem;
+  margin-bottom: 0.85rem;
+}
+
+.brandRow h1,
+.selectedPanel h2,
+.eventLogPanel h2 {
+  font-size: 1.25rem;
+  line-height: 1.1;
+  margin: 0;
+}
+
+.modePill {
+  align-items: center;
+  background: #edf7f2;
+  border: 1px solid #c9e7da;
+  border-radius: 999px;
+  color: #23664d;
+  display: inline-flex;
+  font-size: 0.82rem;
+  font-weight: 800;
+  gap: 0.35rem;
+  margin-bottom: 0.85rem;
+  padding: 0.35rem 0.6rem;
+  text-transform: capitalize;
+}
+
+.stats,
+.detailList {
+  display: grid;
+  gap: 0.65rem;
+  margin: 0;
+}
+
+.stats div,
+.detailList div {
+  align-items: baseline;
+  border-bottom: 1px solid #edf1f5;
+  display: flex;
+  justify-content: space-between;
+  padding-bottom: 0.55rem;
+}
+
+.stats dt,
+.detailList dt {
+  align-items: center;
+  color: #5d6b7b;
+  display: inline-flex;
+  font-size: 0.82rem;
+  gap: 0.35rem;
+}
+
+.stats dd,
+.detailList dd {
+  color: #18212f;
+  font-size: 0.92rem;
+  font-weight: 750;
+  margin: 0;
+  max-width: 9.8rem;
+  overflow-wrap: anywhere;
+  text-align: right;
+}
+
+.selectedPanel {
+  border-top: 1px solid #edf1f5;
+  padding-top: 1rem;
+}
+
+.eventLogPanel {
+  border-top: 1px solid #edf1f5;
+  padding-top: 1rem;
+}
+
+.emptySelection {
+  color: #64748b;
+  margin: 0.75rem 0 0;
+}
+
+.panelHeaderRow {
+  align-items: center;
+  display: flex;
+  gap: 0.75rem;
+  justify-content: space-between;
+  min-width: 0;
+}
+
+.selectionActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+  justify-content: flex-end;
+}
+
+.detailActions {
+  margin-top: 0.55rem;
+}
+
+.selectionActions button {
+  min-height: 2rem;
+}
+
+.selectionCount {
+  color: #64748b;
+  font-size: 0.76rem;
+  font-weight: 800;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+
+.eventLogList {
+  display: grid;
+  gap: 0.65rem;
+  list-style: none;
+  margin: 0.9rem 0 0;
+  padding: 0;
+}
+
+.eventLogList li {
+  background: #f7fafc;
+  border: 1px solid #dce3eb;
+  border-radius: 8px;
+  padding: 0.7rem;
+}
+
+.eventLogList p {
+  color: #47566a;
+  font-size: 0.82rem;
+  line-height: 1.45;
+  margin: 0.25rem 0 0;
+}
+
+.eventTick {
+  color: #174fba;
+  font-size: 0.75rem;
+  font-weight: 800;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+
+.memoryBlock {
+  background: #f7fafc;
+  border: 1px solid #dce3eb;
+  border-radius: 8px;
+  margin-top: 0.9rem;
+  padding: 0.7rem;
+}
+
+.memoryBlock h3 {
+  align-items: center;
+  display: inline-flex;
+  font-size: 0.9rem;
+  gap: 0.35rem;
+  margin: 0 0 0.35rem;
+}
+
+.memoryBlock p {
+  color: #47566a;
+  font-size: 0.82rem;
+  margin: 0.18rem 0;
+}
+
+.memoryList {
+  color: #47566a;
+  display: grid;
+  gap: 0.3rem;
+  margin: 0;
+  padding-left: 1rem;
+}
+
+.memoryListRow {
+  align-items: flex-start;
+  display: flex;
+  gap: 0.55rem;
+  justify-content: space-between;
+}
+
+.memoryActions {
+  display: inline-flex;
+  flex-shrink: 0;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+
+.memoryActions button {
+  min-height: 1.75rem;
+  padding: 0 0.55rem;
+}
+
+.statsBlock {
+  margin-top: 1rem;
+}
+
+.plantWatchGrid {
+  display: grid;
+  gap: 0.55rem;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  margin-top: 0.55rem;
+}
+
+.plantWatch {
+  align-items: center;
+  background: #ffffff;
+  border: 1px solid #dce3eb;
+  border-radius: 8px;
+  display: flex;
+  justify-content: space-between;
+  padding: 0.55rem 0.65rem;
+}
+
+.plantWatch span {
+  color: #5d6b7b;
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+
+.plantWatch strong {
+  color: #18212f;
+  font-size: 0.95rem;
+}
+
+.creatureRoster {
+  display: grid;
+  gap: 0.45rem;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.rosterButton {
+  display: grid;
+  gap: 0.25rem 0.6rem;
+  grid-template-columns: minmax(0, 1.15fr) auto auto auto;
+  justify-items: start;
+  min-height: 0;
+  padding: 0.6rem 0.7rem;
+  text-align: left;
+  width: 100%;
+}
+
+.rosterButton span {
+  overflow-wrap: anywhere;
+}
+
+.rosterButton span:first-child {
+  font-weight: 800;
+}
+
+.rosterButton.active {
+  background: #dff4ea;
+  border-color: #8ed3b1;
+  color: #175a3d;
+}
+
+@media (max-width: 1120px) {
+  .controlSections {
+    grid-template-columns: 1fr;
+  }
+
+  .presetStrip {
+    grid-template-columns: 1fr;
+  }
+
+  .presetButtons {
+    justify-content: flex-start;
+  }
+
+  .fieldGrid {
+    grid-template-columns: repeat(2, minmax(12rem, 1fr));
+  }
+}
+
+@media (max-width: 880px) {
+  .appShell {
+    grid-template-columns: 1fr;
+  }
+
+  .pixiHost {
+    max-height: none;
+    min-height: min(26rem, 72vw);
+    min-width: 100%;
+  }
+}
+
+@media (max-width: 620px) {
+  .fieldGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .sectionSummary {
+    grid-template-columns: 1fr;
+  }
+
+  .sectionBadge {
+    justify-content: center;
+    text-align: center;
+  }
+
+  .rosterButton {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .plantWatchGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .buttonGrid button,
+  .toggleRow button,
+  .toggleField {
+    flex: 1 1 8rem;
+  }
+}

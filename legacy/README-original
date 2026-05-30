@@ -1,0 +1,83 @@
+Agents in a Grid world simulation.
+
+The following explanation may not explain all the strategies that I have implemented in the code. So If you need more information, please refer to the code. This simulation may contain bugs that I could not be bothered to fix, and certain code may have not been coded to best practice.
+
+Feel free to add more ideas or to extend the code.
+
+In the “Agent world” there could be maximum of two types creatures in the world.
+
+The agent types:
+
+SimpleCreature: Less intelligent creature.
+IntelCreature: Most intelligent creature.
+
+The simulated environment in which the creatures act ?:
+
+The “Agent world” is a grid of squares.
+The plants and the creatures will be in this grid.
+
+What are plants?:
+
+There are four types of plants in the world. Green plants, Red plants, Yellow plants, and Magenta plants. The plants are represented in small squares with the colour as their names. Each plant holds different energy levels.
+A plant set consists of a set of random types of plants. The plant sets appears in the “Agent world” in random places in random quantities.
+
+The amount of the plants that will be put in to the grid is variable. In the world there will be a constant amount of plants. The size of the “Agent world” is variable. The number of types of plants are in the world are variable.
+The energy of creatures will be drained until it dies. The speed that their energy drains is variable. If the creature moves to a different square more energy will impair, than if it stays in the same square.
+
+
+What a simplest creatures can do?:
+
+A simple creature will be born in the agent world with a limited amount of energy. To survive the creature moves around the world in random directions persistently looking for plants to consume.The simple creature can only carry a limited amount of plants. This creature eats plants when it's energy goes down less than it's energy limit (When it feels hungry). The creature is able to eat combinations of plants that it carries, and gain more energy than it would have if it ate them individually. The creature can only see the plants in the same square that it is in. When the world has been resized,then the creatures will gradually follow back in to the world. Each individual creature has got their unique ID. It has got a limited memory to remember what it sees.
+
+How I have represented all this in the program? :
+
+The World:
+The world has been represented as drawn black grid of squares on a Jpanel called “Grid”, as you can see in the “paint()” method in the “Grid” class.
+The grid class is able to add creatures and plants to the Grid.
+The existing plants have been stored in a Vector of type Plant.
+The existing Creatures have been stored in a Vector of type SimpleCreature, and both types of agents have been stored in the same vector as the IntelCreature is a specification of a SimpleCreature.
+The WorldFrame.java is a Jframe that holds the Grid and the other control panels.
+The WorldFrame makes sure that there will be a constant amount of plants in the world, as you can see in the addPlantsToWorld() method.
+The methods in the WorldFrame controls the parameters of the program according to the user's input.
+
+The “Plant” holds the attributes of a plant such as, its energy level, its colour, appearance, it's availability status and it's position.
+
+IntelligentCreature is a specified and an intelligent version of SimpleCreature..
+
+The SimpleCreature can only see the plants that are in the same square as it is. This is done by just finding the position range of plants and the SimpleCreature. If some plants are and the creature is in the same position range then the plants can be seen by the creature.
+
+How my creatures look around and the sorts of interactions my creatures can have when they meet two at a time ?
+
+Only a IntelCreature can look around.These creatures can only see only one square ahead itself, as well as the square it is in. It can see the plants as well as the creatures in those squares. The creature can remember the creatures and the plants in those squares that it can see.Just after one has been born, IntelCreature will be in an observation mode, so that it will observe the world by randomly observing the world until it finds more than one plant. Then it will start going after the plants that it sees around. A creature may decide to go after a plant that is more beneficial than the other once. Such as the plants that could complete a combination or closest most energetic plant.If two creatures meet together in a one square they start talking to each other, asking about the plants that the other creature carry. Then the first creature will propose to the other creature for a shared combination, with the amount that it would like to share. If the other creature agrees to share, then they will consume the plants and share the energy amount. When they share the plant combinations they will get double the amount than they if one had the combination itself ungenerously. So it is more desirable for the creatures to share.
+
+The creatures can decide to be partners with another one, and go for other plants that both creatures desire. As when the creatures are in the same square, the creatures may request other creatures to be partners, a creature will request to be a partner of another creature, if the plant the second creature is going after, interests the first creature. If the second creature agrees to be partners, then it will make a "leader" and "partner" relationship between each other. The first creature that made the request will be the partner and the other will be the leader. After the leader gets the plant, the energy amount will be shared. Finally the partnership will end and the two creatures will go their own ways. When the partnership has been made, the colour of the red dot, will change to a light yellow colour if it is a partner, and the colour of the leader's dot will change in to dark yellow.
+
+The creature can make partnership with another one, only if the both of the creatures are neither a partner or a leader.
+
+While a partnership has been established, if the desired plant has been eaten by some other creature, the partnership will end.
+
+If the creatures do not carry any plants and it can not remember any plants, it goes back to the observation mode to collect information about the world.
+
+If the creature can not carry any more plants, the creature will stop travelling to save the amount of energy that it will loose by going to other squares.
+
+The sorts of interactions my creatures should be able have when they meet in groups ?
+
+Currently in the program, there will be only two creature groups. When a creature is involved in a group, other requests will be withdrawn.
+
+If I extend my program to allow the creatures to group with more than one creature groups, I will still have the same structure of my program where I have a leader in the group that manages the group. So When it comes to deciding what to do, the group members will send bids / requests to the leaders. Then the leader decides what step to take next. The utility will be shared equally between all of the group members when the group goes for a task together. Or will be shared according to the contribution that members have done. 
+
+Individual creatures can leave the group when they wants to or the leader can remove unwanted members from the group.
+
+There will be a limit of creatures that can be in one group. The other creatures can request to join the group if they share the same intention.
+
+What I see as reasons for and against my proposals?
+
+For a group, to be able to follow one group, I believe that it will be helpful if there will be a leader who acts similar to a server that records things keep track of the group actions. To handle a large group of agents I think it is better to keep the messages and the transactions synchronised by a way of a leader. So that the every creature will only send requests and get commands from a one entity.
+
+The reasons for withdrawing other requests is that, if the creatures start accepting the requests from outside, they might clash with the transactions that happens inside the group and it might be too much for a creature to handle a lot of requests.
+
+As the individual creature's intentions may change when the time pass by, certain creatures might want to leave the group, so in that case they should be able to leave the group.
+
+In some cases that the leader may notice that certain creatures does not support the group, as much as the leader like them to or they violate any rules inside the group, so the leader is able to kick certain creatures out of the group.
+
+If there is going to be too much creatures group together, the leader might not be able to handle all of them at the same time. Or with the increase of the amount of creatures in the group, the benefits might decrement. So for these reasons, it is best to have a limit the maximum number of possible group members.
