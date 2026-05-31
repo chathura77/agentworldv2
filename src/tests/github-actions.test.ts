@@ -18,11 +18,11 @@ describe("GitHub Actions CI", () => {
     const workflow = readFileSync(".github/workflows/ci.yml", "utf8");
 
     expect(workflow).toContain("deploy/hostinger/compose.yaml config");
-    expect(workflow).toContain("AGENTWORLD_BASE: /agentworld/");
+    expect(workflow).toContain("AGENTWORLD_BASE: /");
     expect(workflow).toContain("docker build --build-arg AGENTWORLD_BASE=");
-    expect(workflow).toContain("http://127.0.0.1:8080/agentworld/");
-    expect(workflow).toContain("http://127.0.0.1:8080/agentworld/llms.txt");
-    expect(workflow).toContain("http://127.0.0.1:8080/agentworld/ai-index.json");
+    expect(workflow).toContain("http://127.0.0.1:8080/");
+    expect(workflow).toContain("http://127.0.0.1:8080/llms.txt");
+    expect(workflow).toContain("http://127.0.0.1:8080/ai-index.json");
   });
 
   it("documents CI and the manual VPS deployment boundary", () => {

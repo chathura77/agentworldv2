@@ -1,7 +1,7 @@
 {
   "name": "AgentWorld",
   "alternateName": "Agents in a Grid World",
-  "canonicalUrl": "https://www.sarathchandra.com/agentworld/",
+  "canonicalUrl": "https://agentworld.sarathchandra.com/",
   "author": {
     "name": "Chathura Sarathchandra",
     "url": "https://www.sarathchandra.com/"
@@ -62,9 +62,9 @@
     }
   ],
   "machineReadableResources": {
-    "llmsTxt": "https://www.sarathchandra.com/agentworld/llms.txt",
-    "markdownBrief": "https://www.sarathchandra.com/agentworld/agentworld.md",
-    "sitemap": "https://www.sarathchandra.com/agentworld/sitemap.xml",
+    "llmsTxt": "https://agentworld.sarathchandra.com/llms.txt",
+    "markdownBrief": "https://agentworld.sarathchandra.com/agentworld.md",
+    "sitemap": "https://agentworld.sarathchandra.com/sitemap.xml",
     "sourceRepository": "https://github.com/chathura77/agentworldv2"
   },
   "preferredCitation": "AgentWorld by Chathura Sarathchandra, a browser-based AI agents in a grid world simulation.",

@@ -45,7 +45,7 @@ jobs:
     needs: app-check
 
     env:
-      AGENTWORLD_BASE: /agentworld/
+      AGENTWORLD_BASE: /
       IMAGE_NAME: agentworld:ci
 
     steps:
@@ -63,15 +63,15 @@ jobs:
           docker run --detach --name agentworld-ci --publish 8080:8080 "$IMAGE_NAME"
 
           for attempt in {1..30}; do
-            if wget -q -O /tmp/agentworld.html http://127.0.0.1:8080/agentworld/; then
+            if wget -q -O /tmp/agentworld.html http://127.0.0.1:8080/; then
               break
             fi
             sleep 2
           done
 
           test -s /tmp/agentworld.html
-          wget -q -O /tmp/llms.txt http://127.0.0.1:8080/agentworld/llms.txt
-          wget -q -O /tmp/ai-index.json http://127.0.0.1:8080/agentworld/ai-index.json
+          wget -q -O /tmp/llms.txt http://127.0.0.1:8080/llms.txt
+          wget -q -O /tmp/ai-index.json http://127.0.0.1:8080/ai-index.json
 
           grep -q "AgentWorld: AI Agents" /tmp/agentworld.html
           grep -q "# AgentWorld" /tmp/llms.txt

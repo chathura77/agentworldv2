@@ -25,7 +25,7 @@ npm run check
 
 GitHub Actions CI runs the same gate for pushes and pull requests to `master`,
 then validates the Hostinger Compose file and smoke-tests a Docker image built
-for `/agentworld/`. Treat a green workflow as the precondition for pulling the
+for the subdomain root. Treat a green workflow as the precondition for pulling the
 latest commit onto the VPS.
 
 Current verified gate for this update:
@@ -49,9 +49,10 @@ Build the production image:
 docker build -t agentworld:prod .
 ```
 
-If deploying below the main site path, for example
-`https://www.sarathchandra.com/agentworld/`, set the Vite base path at build
-time:
+The recommended DNS target is `https://agentworld.sarathchandra.com/`, which
+uses the default root base path. If you later control the main site's web server
+and deploy below a path such as `https://sarathchandra.com/agentworld/`, set the
+Vite base path at build time:
 
 ```bash
 docker build --build-arg AGENTWORLD_BASE=/agentworld/ -t agentworld:prod .
@@ -69,7 +70,7 @@ The included `Dockerfile` uses a Node build stage and an unprivileged Nginx
 runtime stage. The build stage runs `npm run check`, including dependency
 audit, before copying only static assets and `nginx.conf` into the final image.
 The Nginx config supports both root deployment and `/agentworld/` path
-deployment for the planned `sarathchandra.com` integration.
+deployment for any future main-domain reverse-proxy integration.
 
 For Hostinger VPS deployment, prefer the Docker Compose workflow documented in
 `docs/hostinger-vps-deployment.md`. It binds AgentWorld only to localhost and
@@ -77,16 +78,16 @@ uses the public Nginx site as the reverse proxy.
 
 ## SEO and AI Retrieval Checks
 
-- Confirm `https://www.sarathchandra.com/agentworld/` returns the AgentWorld
+- Confirm `https://agentworld.sarathchandra.com/` returns the AgentWorld
   canonical page with the expected title, description, Open Graph tags, and
   Schema.org JSON-LD.
-- Confirm `https://www.sarathchandra.com/agentworld/sitemap.xml`,
-  `https://www.sarathchandra.com/agentworld/llms.txt`,
-  `https://www.sarathchandra.com/agentworld/agentworld.md`, and
-  `https://www.sarathchandra.com/agentworld/ai-index.json` return `200`.
-- If the app is mounted under the existing Ghost site rather than owning the
-  domain root, add the AgentWorld sitemap URL to the root `sarathchandra.com`
-  robots file or to the main site sitemap index.
+- Confirm `https://agentworld.sarathchandra.com/sitemap.xml`,
+  `https://agentworld.sarathchandra.com/llms.txt`,
+  `https://agentworld.sarathchandra.com/agentworld.md`, and
+  `https://agentworld.sarathchandra.com/ai-index.json` return `200`.
+- Add a normal backlink from the Ghost-powered main site to
+  `https://agentworld.sarathchandra.com/`, and optionally link the AgentWorld
+  sitemap from the main site sitemap index.
 - Submit or inspect the canonical URL in Google Search Console after deployment.
 
 ## Public VM Checklist

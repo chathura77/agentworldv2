@@ -5,7 +5,6 @@ APP_DIR="${APP_DIR:-/opt/agentworld}"
 BRANCH="${BRANCH:-master}"
 ENV_FILE="${ENV_FILE:-$APP_DIR/deploy/hostinger/.env}"
 COMPOSE_FILE="${COMPOSE_FILE:-$APP_DIR/deploy/hostinger/compose.yaml}"
-HEALTH_URL="${HEALTH_URL:-http://127.0.0.1:${AGENTWORLD_HOST_PORT:-8080}/agentworld/}"
 
 if ! command -v git >/dev/null 2>&1; then
   echo "git is required" >&2
@@ -30,6 +29,13 @@ else
   echo "Missing $ENV_FILE; copy deploy/hostinger/.env.example first." >&2
   exit 1
 fi
+
+HEALTH_PATH="${AGENTWORLD_HEALTH_PATH:-/}"
+case "$HEALTH_PATH" in
+  /*) ;;
+  *) HEALTH_PATH="/$HEALTH_PATH" ;;
+esac
+HEALTH_URL="${HEALTH_URL:-http://127.0.0.1:${AGENTWORLD_HOST_PORT:-8080}${HEALTH_PATH}}"
 
 git fetch origin "$BRANCH"
 git pull --ff-only origin "$BRANCH"

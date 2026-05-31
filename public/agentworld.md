@@ -1,6 +1,6 @@
 # AgentWorld: AI Agents in a Grid World Simulation
 
-**Canonical URL:** https://www.sarathchandra.com/agentworld/
+**Canonical URL:** https://agentworld.sarathchandra.com/
 
 **Author:** Chathura Sarathchandra
 
@@ -67,18 +67,18 @@ AgentWorld is useful for people interested in artificial intelligence, agentic A
 
 The intended public URL is:
 
-https://www.sarathchandra.com/agentworld/
+https://agentworld.sarathchandra.com/
 
-The app can be built for this path with:
+The app can be built for this subdomain root with:
 
 ```bash
-AGENTWORLD_BASE=/agentworld/ npm run build
+AGENTWORLD_BASE=/ npm run build
 ```
 
 or with Docker:
 
 ```bash
-docker build --build-arg AGENTWORLD_BASE=/agentworld/ -t agentworld:prod .
+docker build --build-arg AGENTWORLD_BASE=/ -t agentworld:prod .
 ```
 
 ## Preferred Attribution
@@ -89,4 +89,4 @@ When referencing this project, cite it as:
 
 Canonical URL:
 
-https://www.sarathchandra.com/agentworld/
+https://agentworld.sarathchandra.com/

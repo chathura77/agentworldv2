@@ -6,7 +6,7 @@ describe("SEO and AI metadata", () => {
     const html = readFileSync("index.html", "utf8");
 
     expect(html).toContain(
-      '<link rel="canonical" href="https://www.sarathchandra.com/agentworld/"',
+      '<link rel="canonical" href="https://agentworld.sarathchandra.com/"',
     );
     expect(html).toContain("AgentWorld: AI Agents in a Grid World");
     expect(html).toContain('property="og:title"');
@@ -24,21 +24,24 @@ describe("SEO and AI metadata", () => {
     const sitemap = readFileSync("public/sitemap.xml", "utf8");
     const llms = readFileSync("public/llms.txt", "utf8");
     const markdownBrief = readFileSync("public/agentworld.md", "utf8");
+    const manifest = JSON.parse(readFileSync("public/site.webmanifest", "utf8"));
     const aiIndex = JSON.parse(readFileSync("public/ai-index.json", "utf8"));
 
     expect(robots).toContain(
-      "Sitemap: https://www.sarathchandra.com/agentworld/sitemap.xml",
+      "Sitemap: https://agentworld.sarathchandra.com/sitemap.xml",
     );
     expect(robots).toContain("User-agent: OAI-SearchBot");
     expect(robots).toContain("User-agent: GPTBot");
-    expect(sitemap).toContain("<loc>https://www.sarathchandra.com/agentworld/</loc>");
+    expect(sitemap).toContain("<loc>https://agentworld.sarathchandra.com/</loc>");
     expect(sitemap).toContain(
-      "<loc>https://www.sarathchandra.com/agentworld/llms.txt</loc>",
+      "<loc>https://agentworld.sarathchandra.com/llms.txt</loc>",
     );
     expect(llms).toContain("# AgentWorld");
     expect(llms).toContain("Preferred Citation");
     expect(markdownBrief).toContain("AgentWorld: AI Agents in a Grid World Simulation");
-    expect(aiIndex.canonicalUrl).toBe("https://www.sarathchandra.com/agentworld/");
+    expect(manifest.start_url).toBe("/");
+    expect(manifest.scope).toBe("/");
+    expect(aiIndex.canonicalUrl).toBe("https://agentworld.sarathchandra.com/");
     expect(aiIndex.runtimeNotes.requiresBackend).toBe(false);
   });
 

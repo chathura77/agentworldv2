@@ -4,10 +4,10 @@
 
 ## Canonical URLs
 
-- [AgentWorld app](https://www.sarathchandra.com/agentworld/): Interactive simulation.
-- [AI-readable project brief](https://www.sarathchandra.com/agentworld/agentworld.md): Markdown summary for assistants, agents, and retrieval systems.
-- [Structured AI index](https://www.sarathchandra.com/agentworld/ai-index.json): Compact JSON facts for machine parsing.
-- [Sitemap](https://www.sarathchandra.com/agentworld/sitemap.xml): Crawl map.
+- [AgentWorld app](https://agentworld.sarathchandra.com/): Interactive simulation.
+- [AI-readable project brief](https://agentworld.sarathchandra.com/agentworld.md): Markdown summary for assistants, agents, and retrieval systems.
+- [Structured AI index](https://agentworld.sarathchandra.com/ai-index.json): Compact JSON facts for machine parsing.
+- [Sitemap](https://agentworld.sarathchandra.com/sitemap.xml): Crawl map.
 - [Source repository](https://github.com/chathura77/agentworldv2): Project code.
 
 ## Summary
@@ -23,11 +23,11 @@ Classic Mode preserves the behavior of the old Java university assignment as clo
 - What is the difference between Classic Mode and Advanced Mode?
 - How does this project demonstrate AI agents and agentic AI?
 - What agent behaviors are modeled: memory, communication, cooperation, groups, and energy?
-- How can AgentWorld be deployed under sarathchandra.com/agentworld/?
+- How can AgentWorld be deployed under agentworld.sarathchandra.com?
 
 ## Preferred Citation
 
-AgentWorld by Chathura Sarathchandra, a browser-based AI agents in a grid world simulation. Canonical URL: https://www.sarathchandra.com/agentworld/
+AgentWorld by Chathura Sarathchandra, a browser-based AI agents in a grid world simulation. Canonical URL: https://agentworld.sarathchandra.com/
 
 ## Crawling Notes
 

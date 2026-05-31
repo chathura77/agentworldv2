@@ -94,8 +94,8 @@ environments where child-process spawning is restricted.
 GitHub Actions runs on pushes and pull requests to `master`. The workflow uses
 Node.js 24, installs dependencies with `npm ci`, runs the same local production
 gate via `npm run check`, validates the Hostinger Docker Compose config, builds
-the production Docker image with `AGENTWORLD_BASE=/agentworld/`, and smoke-tests
-the mounted app plus `llms.txt` and `ai-index.json`.
+the production Docker image with `AGENTWORLD_BASE=/`, and smoke-tests the
+mounted app plus `llms.txt` and `ai-index.json`.
 
 Deployment to the VPS is still controlled by the Hostinger update script below.
 That keeps production changes explicit until a later deploy workflow is wired to
@@ -116,19 +116,26 @@ the production image locally:
 ```bash
 npm ci
 npm run check
-docker build --build-arg AGENTWORLD_BASE=/agentworld/ -t agentworld:prod .
+docker build --build-arg AGENTWORLD_BASE=/ -t agentworld:prod .
 docker run --rm -p 8080:8080 agentworld:prod
 ```
 
-Open `http://127.0.0.1:8080/agentworld/`. The same image also serves the app at
-`/` for quick local checks.
+Open `http://127.0.0.1:8080/`.
 
 ### Hostinger VPS Recommended Path
 
-For `https://www.sarathchandra.com/agentworld/`, use the Hostinger Docker VPS
-template or any Ubuntu VPS with Docker Compose. The app runs as a local-only
-container on `127.0.0.1:8080`; the public Nginx site for `sarathchandra.com`
-proxies `/agentworld/` to it.
+With the current DNS, `sarathchandra.com` points at Ghost's apex address and
+`www` is a CNAME to `chathura-sarathchandra.ghost.io`. DNS cannot route only
+`/agentworld/` to a VPS, so the recommended deployment is a real subdomain:
+
+```text
+agentworld.sarathchandra.com
+```
+
+Create an A record named `agentworld` pointing to the Hostinger VPS IPv4
+address. Leave the existing `@`, `www`, mail, verification, Minecraft, and
+GoDaddy-managed records unchanged. The app runs as a local-only container on
+`127.0.0.1:8080`; the public Nginx subdomain site proxies to it.
 
 First deploy:
 
@@ -143,40 +150,39 @@ cp deploy/hostinger/.env.example deploy/hostinger/.env
 docker compose --env-file deploy/hostinger/.env -f deploy/hostinger/compose.yaml up -d --build
 ```
 
-Keep these defaults in `deploy/hostinger/.env` for the planned path deployment:
+Keep these defaults in `deploy/hostinger/.env` for the subdomain deployment:
 
 ```bash
-AGENTWORLD_BASE=/agentworld/
+AGENTWORLD_BASE=/
+AGENTWORLD_HEALTH_PATH=/
 AGENTWORLD_HOST_PORT=8080
 ```
 
 Verify on the VPS:
 
 ```bash
-curl -I http://127.0.0.1:8080/agentworld/
-curl -I http://127.0.0.1:8080/agentworld/llms.txt
+curl -I http://127.0.0.1:8080/
+curl -I http://127.0.0.1:8080/llms.txt
 docker compose --env-file deploy/hostinger/.env -f deploy/hostinger/compose.yaml ps
 ```
 
-Add the contents of
-`deploy/hostinger/nginx-agentworld-location.conf` inside the existing HTTPS
-`server` block for `sarathchandra.com` or `www.sarathchandra.com`, then reload
-Nginx:
+Install `deploy/hostinger/nginx-agentworld-subdomain.conf` as the Nginx server
+block for `agentworld.sarathchandra.com`, then reload Nginx:
 
 ```bash
 nginx -t
 systemctl reload nginx
 ```
 
-If `sarathchandra.com` is not already configured for TLS on this VPS, issue a
-certificate after DNS points to the server:
+Issue TLS after DNS points to the VPS:
 
 ```bash
-certbot --nginx -d sarathchandra.com -d www.sarathchandra.com
+certbot --nginx -d agentworld.sarathchandra.com
 ```
 
-If the main site cannot proxy `/agentworld/`, use the subdomain option in
-`docs/hostinger-vps-deployment.md` and set `AGENTWORLD_BASE=/`.
+If you later move `sarathchandra.com` off Ghost and control the main web server,
+the path deployment remains available with `AGENTWORLD_BASE=/agentworld/` and
+`deploy/hostinger/nginx-agentworld-location.conf`.
 
 ### Updating Production
 
@@ -197,7 +203,7 @@ update-agentworld
 
 The update script loads `deploy/hostinger/.env`, fetches `origin/master`,
 fast-forward pulls, rebuilds the Docker image, restarts the Compose service, and
-health-checks the local `/agentworld/` URL.
+health-checks the configured local URL.
 
 ### Maintenance
 
@@ -217,9 +223,9 @@ publish `8080`, `5173`, the Docker API, npm, Node, or Vite to the internet.
 After deployment, confirm:
 
 ```bash
-curl -I https://www.sarathchandra.com/agentworld/
-curl -I https://www.sarathchandra.com/agentworld/llms.txt
-curl -I https://www.sarathchandra.com/agentworld/ai-index.json
+curl -I https://agentworld.sarathchandra.com/
+curl -I https://agentworld.sarathchandra.com/llms.txt
+curl -I https://agentworld.sarathchandra.com/ai-index.json
 ```
 
 ### Rollback
@@ -233,7 +239,7 @@ git fetch origin
 git log --oneline -5
 git checkout GOOD_COMMIT_SHA
 docker compose --env-file deploy/hostinger/.env -f deploy/hostinger/compose.yaml up -d --build --remove-orphans
-curl -I http://127.0.0.1:8080/agentworld/
+curl -I http://127.0.0.1:8080/
 ```
 
 When the issue is fixed on `master`, return the VPS checkout to the branch:
@@ -259,9 +265,9 @@ VM/container checklist and security review.
 ## SEO and AI Indexing
 
 The static shell includes canonical metadata for
-`https://www.sarathchandra.com/agentworld/`, Open Graph/Twitter cards,
-Schema.org JSON-LD, a sitemap, robots rules, and a no-JavaScript fallback summary
-so crawlers can understand the project before the React simulation loads.
+`https://agentworld.sarathchandra.com/`, Open Graph/Twitter cards, Schema.org
+JSON-LD, a sitemap, robots rules, and a no-JavaScript fallback summary so
+crawlers can understand the project before the React simulation loads.
 
 Machine-readable resources for AI assistants and retrieval systems are published
 from `public/`:
@@ -271,9 +277,10 @@ from `public/`:
 - `ai-index.json`: structured facts about modes, concepts, resources, and runtime
   behavior.
 
-If this app is mounted under the main Ghost site at `/agentworld/`, make sure the
-root `sarathchandra.com/robots.txt` or main sitemap links to
-`https://www.sarathchandra.com/agentworld/sitemap.xml`.
+Once deployed, add a normal backlink from the Ghost site to
+`https://agentworld.sarathchandra.com/`. If a future path deployment is mounted
+under the main site at `/agentworld/`, also link that sitemap from the root
+`sarathchandra.com/robots.txt` or main sitemap index.
 
 ## Classic Mode Mapping
 

@@ -5,8 +5,9 @@ VPS while keeping updates and maintenance simple.
 
 ## Deployment Shape
 
-- DNS points `sarathchandra.com` or a chosen subdomain to the Hostinger VPS.
-- The existing public web server terminates TLS and proxies `/agentworld/`.
+- DNS points `agentworld.sarathchandra.com` to the Hostinger VPS.
+- The existing Ghost records for `sarathchandra.com` and `www` stay unchanged.
+- The public VPS web server terminates TLS and proxies the subdomain root.
 - AgentWorld runs as a local-only Docker Compose service on `127.0.0.1:8080`.
 - The container serves static files from unprivileged Nginx.
 - Updates are a repeatable Git pull plus Docker Compose rebuild.
@@ -15,19 +16,37 @@ This keeps Node, Vite, Docker, and the container port off the public internet.
 
 ## Domain Routing Decision
 
-`sarathchandra.com/agentworld/` is a path on the main domain, not a subdomain.
-That path works only if the web server currently serving `sarathchandra.com`
-can add the reverse-proxy location from this repo.
+The current DNS records show that the main site is Ghost-controlled:
 
-If the main Ghost site is hosted somewhere else and cannot proxy a path to the
-Hostinger VPS, use a true subdomain instead:
+- `@` points to `178.128.137.126`.
+- `www` is a CNAME to `chathura-sarathchandra.ghost.io`.
+
+DNS cannot route only `sarathchandra.com/agentworld/` to a VPS. URL paths are
+handled by the web server that receives the request, and in this DNS shape that
+server is Ghost, not the Hostinger AgentWorld container.
+
+Use a true subdomain instead:
 
 ```text
 agentworld.sarathchandra.com
 ```
 
-That requires only a DNS A record for `agentworld` pointing to the VPS IP and
-the subdomain Nginx config in `deploy/hostinger/nginx-agentworld-subdomain.conf`.
+Add only this new record:
+
+```text
+Type: A
+Name: agentworld
+Data: YOUR_HOSTINGER_VPS_IPV4
+TTL: 600 seconds or 1/2 Hour
+```
+
+Leave the existing `@`, `www`, `txt`, `_dmarc`, `mc`, `evplanner`,
+`api.evplanner`, GoDaddy-managed `in`/`x`, NS, SOA, and SRV records unchanged.
+
+If you later move the main site behind a VPS-controlled Nginx server, the path
+deployment at `sarathchandra.com/agentworld/` can be enabled with
+`deploy/hostinger/nginx-agentworld-location.conf` and
+`AGENTWORLD_BASE=/agentworld/`.
 
 ## Hostinger Setup
 
@@ -68,10 +87,11 @@ Create the deployment env file:
 cp deploy/hostinger/.env.example deploy/hostinger/.env
 ```
 
-For the planned path deployment, keep:
+For the recommended subdomain deployment, keep:
 
 ```bash
-AGENTWORLD_BASE=/agentworld/
+AGENTWORLD_BASE=/
+AGENTWORLD_HEALTH_PATH=/
 AGENTWORLD_HOST_PORT=8080
 ```
 
@@ -84,16 +104,15 @@ docker compose --env-file deploy/hostinger/.env -f deploy/hostinger/compose.yaml
 Verify locally on the VPS:
 
 ```bash
-curl -I http://127.0.0.1:8080/agentworld/
-curl -I http://127.0.0.1:8080/agentworld/llms.txt
+curl -I http://127.0.0.1:8080/
+curl -I http://127.0.0.1:8080/llms.txt
 docker compose --env-file deploy/hostinger/.env -f deploy/hostinger/compose.yaml ps
 ```
 
-## Reverse Proxy for `/agentworld/`
+## Reverse Proxy for the Subdomain
 
-Add the contents of `deploy/hostinger/nginx-agentworld-location.conf` inside the
-existing HTTPS `server` block for `sarathchandra.com` or
-`www.sarathchandra.com`.
+Use `deploy/hostinger/nginx-agentworld-subdomain.conf` as the Nginx server block
+for `agentworld.sarathchandra.com`.
 
 Then reload Nginx:
 
@@ -102,27 +121,26 @@ nginx -t
 systemctl reload nginx
 ```
 
-If this is a new Nginx site, issue TLS after DNS points to the VPS:
-
-```bash
-certbot --nginx -d sarathchandra.com -d www.sarathchandra.com
-```
-
-## Optional True Subdomain
-
-If you prefer `https://agentworld.sarathchandra.com/`, create an A record for
-`agentworld` pointing to the VPS IP and set:
-
-```bash
-AGENTWORLD_BASE=/
-```
-
-Use `deploy/hostinger/nginx-agentworld-subdomain.conf` as the server block and
-issue TLS for the subdomain:
+Issue TLS after DNS points to the VPS:
 
 ```bash
 certbot --nginx -d agentworld.sarathchandra.com
 ```
+
+## Optional Path Deployment
+
+If you later control the web server for `sarathchandra.com` and want
+`https://sarathchandra.com/agentworld/`, set:
+
+```bash
+AGENTWORLD_BASE=/agentworld/
+AGENTWORLD_HEALTH_PATH=/agentworld/
+```
+
+Then include `deploy/hostinger/nginx-agentworld-location.conf` inside the
+existing HTTPS server block for `sarathchandra.com`. This option will not work
+while the apex and `www` traffic are handled by Ghost without a reverse proxy
+you control.
 
 ## Updates
 
@@ -138,7 +156,7 @@ It will:
 2. Fetch and fast-forward pull `origin/master`.
 3. Rebuild the Docker image.
 4. Restart the Compose service.
-5. Health-check the local `/agentworld/` URL.
+5. Health-check the configured local URL.
 
 For convenience:
 
@@ -153,7 +171,7 @@ update-agentworld
 GitHub Actions validates every push and pull request to `master` before you pull
 updates onto the VPS. The CI workflow runs `npm run check`, validates the
 Hostinger Compose file, builds the production Docker image with
-`AGENTWORLD_BASE=/agentworld/`, and smoke-tests the mounted app plus AI indexing
+`AGENTWORLD_BASE=/`, and smoke-tests the subdomain-root app plus AI indexing
 resources.
 
 The workflow intentionally does not SSH into the VPS yet. Production updates

@@ -1,16 +1,16 @@
 User-agent: *
-Allow: /agentworld/
-Allow: /agentworld/assets/
-Allow: /agentworld/agentworld.md
-Allow: /agentworld/ai-index.json
-Allow: /agentworld/llms.txt
-Sitemap: https://www.sarathchandra.com/agentworld/sitemap.xml
+Allow: /
+Allow: /assets/
+Allow: /agentworld.md
+Allow: /ai-index.json
+Allow: /llms.txt
+Sitemap: https://agentworld.sarathchandra.com/sitemap.xml
 
 User-agent: OAI-SearchBot
-Allow: /agentworld/
+Allow: /
 
 User-agent: GPTBot
-Allow: /agentworld/
+Allow: /
 
 User-agent: ChatGPT-User
-Allow: /agentworld/
+Allow: /

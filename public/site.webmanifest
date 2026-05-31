@@ -2,14 +2,14 @@
   "name": "AgentWorld",
   "short_name": "AgentWorld",
   "description": "Chathura Sarathchandra's browser-based AI agents in a grid world simulation.",
-  "start_url": "/agentworld/",
-  "scope": "/agentworld/",
+  "start_url": "/",
+  "scope": "/",
   "display": "standalone",
   "background_color": "#392422",
   "theme_color": "#392422",
   "icons": [
     {
-      "src": "/agentworld/favicon.svg",
+      "src": "/favicon.svg",
       "sizes": "64x64",
       "type": "image/svg+xml",
       "purpose": "any"
