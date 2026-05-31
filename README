@@ -103,61 +103,156 @@ GitHub environment secrets.
 
 ## Production Deployment
 
-Build and serve only the static `dist/` output on public infrastructure. Do not
-expose `npm run dev`, Vite preview, Node, npm, or the Docker API to the public
-internet.
+AgentWorld is a static browser app after `npm run build`. Public
+infrastructure should serve only the generated assets or the included production
+Nginx container. Do not expose `npm run dev`, Vite preview, Node, npm, Docker,
+or the container port directly to the internet.
+
+### Local Production Check
+
+Before deploying, make sure `master` has a green GitHub Actions run and verify
+the production image locally:
 
 ```bash
-docker build -t agentworld:prod .
+npm ci
+npm run check
+docker build --build-arg AGENTWORLD_BASE=/agentworld/ -t agentworld:prod .
 docker run --rm -p 8080:8080 agentworld:prod
 ```
 
-For a path deployment such as `https://www.sarathchandra.com/agentworld/`,
-build with:
-
-```bash
-AGENTWORLD_BASE=/agentworld/ npm run build
-```
-
-or pass the same base path into the Docker build:
-
-```bash
-docker build --build-arg AGENTWORLD_BASE=/agentworld/ -t agentworld:prod .
-```
-
-The included Nginx config serves both `/` and `/agentworld/` so the same image
-can be tested locally while still supporting the planned site path.
+Open `http://127.0.0.1:8080/agentworld/`. The same image also serves the app at
+`/` for quick local checks.
 
 ### Hostinger VPS Recommended Path
 
 For `https://www.sarathchandra.com/agentworld/`, use the Hostinger Docker VPS
-template or any Ubuntu VPS with Docker Compose:
+template or any Ubuntu VPS with Docker Compose. The app runs as a local-only
+container on `127.0.0.1:8080`; the public Nginx site for `sarathchandra.com`
+proxies `/agentworld/` to it.
+
+First deploy:
 
 ```bash
 ssh root@YOUR_VPS_IP
+apt update
+apt install -y git nginx certbot python3-certbot-nginx
+mkdir -p /opt
 git clone https://github.com/chathura77/agentworldv2.git /opt/agentworld
 cd /opt/agentworld
 cp deploy/hostinger/.env.example deploy/hostinger/.env
 docker compose --env-file deploy/hostinger/.env -f deploy/hostinger/compose.yaml up -d --build
 ```
 
-The Compose service binds the app to `127.0.0.1:8080` only. Add
-`deploy/hostinger/nginx-agentworld-location.conf` to the existing HTTPS Nginx
-server block for `sarathchandra.com`, then run:
+Keep these defaults in `deploy/hostinger/.env` for the planned path deployment:
+
+```bash
+AGENTWORLD_BASE=/agentworld/
+AGENTWORLD_HOST_PORT=8080
+```
+
+Verify on the VPS:
+
+```bash
+curl -I http://127.0.0.1:8080/agentworld/
+curl -I http://127.0.0.1:8080/agentworld/llms.txt
+docker compose --env-file deploy/hostinger/.env -f deploy/hostinger/compose.yaml ps
+```
+
+Add the contents of
+`deploy/hostinger/nginx-agentworld-location.conf` inside the existing HTTPS
+`server` block for `sarathchandra.com` or `www.sarathchandra.com`, then reload
+Nginx:
 
 ```bash
 nginx -t
 systemctl reload nginx
 ```
 
-Update later with:
+If `sarathchandra.com` is not already configured for TLS on this VPS, issue a
+certificate after DNS points to the server:
+
+```bash
+certbot --nginx -d sarathchandra.com -d www.sarathchandra.com
+```
+
+If the main site cannot proxy `/agentworld/`, use the subdomain option in
+`docs/hostinger-vps-deployment.md` and set `AGENTWORLD_BASE=/`.
+
+### Updating Production
+
+Development changes should be committed and pushed to GitHub first. Wait for
+GitHub Actions to pass, then update the VPS:
 
 ```bash
 APP_DIR=/opt/agentworld /opt/agentworld/deploy/hostinger/update.sh
 ```
 
-For full first-deploy, update, optional timer, subdomain, firewall, and rollback
-notes, see `docs/hostinger-vps-deployment.md`. See also
+For a shorter operator command:
+
+```bash
+chmod +x /opt/agentworld/deploy/hostinger/update.sh
+ln -sf /opt/agentworld/deploy/hostinger/update.sh /usr/local/bin/update-agentworld
+update-agentworld
+```
+
+The update script loads `deploy/hostinger/.env`, fetches `origin/master`,
+fast-forward pulls, rebuilds the Docker image, restarts the Compose service, and
+health-checks the local `/agentworld/` URL.
+
+### Maintenance
+
+Routine checks on the VPS:
+
+```bash
+cd /opt/agentworld
+docker compose --env-file deploy/hostinger/.env -f deploy/hostinger/compose.yaml ps
+docker compose --env-file deploy/hostinger/.env -f deploy/hostinger/compose.yaml logs --tail=120 web
+docker image prune -f
+nginx -t
+systemctl status nginx --no-pager
+```
+
+Keep only `80` and `443` public, and restrict `22` to trusted admin IPs. Do not
+publish `8080`, `5173`, the Docker API, npm, Node, or Vite to the internet.
+After deployment, confirm:
+
+```bash
+curl -I https://www.sarathchandra.com/agentworld/
+curl -I https://www.sarathchandra.com/agentworld/llms.txt
+curl -I https://www.sarathchandra.com/agentworld/ai-index.json
+```
+
+### Rollback
+
+If a production update misbehaves, roll back by checking out a known-good commit
+and rebuilding:
+
+```bash
+cd /opt/agentworld
+git fetch origin
+git log --oneline -5
+git checkout GOOD_COMMIT_SHA
+docker compose --env-file deploy/hostinger/.env -f deploy/hostinger/compose.yaml up -d --build --remove-orphans
+curl -I http://127.0.0.1:8080/agentworld/
+```
+
+When the issue is fixed on `master`, return the VPS checkout to the branch:
+
+```bash
+git checkout master
+APP_DIR=/opt/agentworld /opt/agentworld/deploy/hostinger/update.sh
+```
+
+### Optional Automation
+
+The repo includes optional systemd timer files in `deploy/hostinger/systemd/`
+for scheduled fast-forward updates. Manual updates are safer while the app is
+still changing quickly; only enable the timer if you are comfortable with the
+server pulling green `master` automatically.
+
+For the full deployment reference, including the subdomain path, timer setup,
+firewall notes, and official Hostinger links, see
+`docs/hostinger-vps-deployment.md`. See also
 `docs/production-readiness.md` and `docs/security-review.md` for the public
 VM/container checklist and security review.
 

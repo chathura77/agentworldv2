@@ -27,6 +27,9 @@ describe("Hostinger VPS deployment artifacts", () => {
     expect(script).toContain("git pull --ff-only origin");
     expect(script).toContain("up -d --build --remove-orphans");
     expect(readme).toContain("Hostinger VPS Recommended Path");
+    expect(readme).toContain("Updating Production");
+    expect(readme).toContain("Maintenance");
+    expect(readme).toContain("Rollback");
     expect(docs).toContain("APP_DIR=/opt/agentworld");
   });
 });
