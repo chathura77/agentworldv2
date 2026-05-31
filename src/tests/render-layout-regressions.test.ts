@@ -17,7 +17,9 @@ describe("rendering and layout regressions", () => {
   it("keeps event log growth inside a fixed scrolling panel", () => {
     const appCss = readFileSync("src/app/App.css", "utf8");
 
-    expect(appCss).toMatch(/\.appShell\s*\{[\s\S]*height:\s*100vh;/);
+    expect(appCss).toMatch(/\.siteFrame\s*\{[\s\S]*height:\s*100vh;/);
+    expect(appCss).toMatch(/\.siteFrame\s*\{[\s\S]*overflow:\s*hidden;/);
+    expect(appCss).toMatch(/\.appShell\s*\{[\s\S]*height:\s*100%;/);
     expect(appCss).toMatch(/\.appShell\s*\{[\s\S]*overflow:\s*hidden;/);
     expect(appCss).toMatch(/\.eventLogPanel\s*\{[\s\S]*max-height:\s*16rem;/);
     expect(appCss).toMatch(/\.eventLogPanel\s*\{[\s\S]*overflow:\s*hidden;/);

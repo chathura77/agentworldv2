@@ -57,7 +57,12 @@ The Classic viewport inspector now also reports selected-creature context per
 cell, including previous/ahead/linked flags, remembered plant or creature
 entries in that square, and intel targeters currently pursuing it. Advanced 3D
 zoom stays clear at wider camera distances, and the event log is constrained to
-an internal scrolling panel so new events do not move the grid viewport.
+an internal scrolling panel so new events do not move the grid viewport. The app
+now sits inside a `sarathchandra.com` site frame with home/navigation backlinks,
+a subtle AgentWorld watermark, and a personal-project disclaimer matching the
+main site's restrained Ghost-style theme. The Pixi Classic cell inspector also
+supports the same pinned-cell edit actions as the side panel, so viewport-first
+debugging can add/remove plants and creatures without leaving the board.
 
 ## Run
 
@@ -90,6 +95,22 @@ internet.
 docker build -t agentworld:prod .
 docker run --rm -p 8080:8080 agentworld:prod
 ```
+
+For a path deployment such as `https://www.sarathchandra.com/agentworld/`,
+build with:
+
+```bash
+AGENTWORLD_BASE=/agentworld/ npm run build
+```
+
+or pass the same base path into the Docker build:
+
+```bash
+docker build --build-arg AGENTWORLD_BASE=/agentworld/ -t agentworld:prod .
+```
+
+The included Nginx config serves both `/` and `/agentworld/` so the same image
+can be tested locally while still supporting the planned site path.
 
 See `docs/production-readiness.md` and `docs/security-review.md` for the public
 VM/container checklist and security review.

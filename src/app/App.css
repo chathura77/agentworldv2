@@ -1,19 +1,38 @@
 :root {
   color-scheme: light;
   font-family:
-    Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+    Manrope,
+    Inter,
+    ui-sans-serif,
+    system-ui,
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
     sans-serif;
-  background: #eef1f4;
-  color: #18212f;
+  background: #392422;
+  color: #f8f3ef;
 }
 
 * {
   box-sizing: border-box;
 }
 
+html,
+body {
+  min-height: 100%;
+}
+
 body {
   margin: 0;
   overflow: hidden;
+}
+
+#root {
+  min-height: 100vh;
+}
+
+a {
+  color: inherit;
 }
 
 button,
@@ -42,11 +61,94 @@ button:hover {
   border-color: #8da0b8;
 }
 
+.siteFrame {
+  background: #392422;
+  color: #f8f3ef;
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr) auto;
+  height: 100vh;
+  overflow: hidden;
+}
+
+.siteMasthead {
+  align-items: center;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.14);
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  padding: 0.85rem 1.25rem 0.75rem;
+}
+
+.siteIdentity {
+  display: grid;
+  gap: 0.12rem;
+  min-width: 0;
+  text-decoration: none;
+}
+
+.siteName {
+  color: #ffffff;
+  font-size: 1.05rem;
+  font-weight: 850;
+  line-height: 1.1;
+}
+
+.siteKicker {
+  color: #dfcfc8;
+  font-size: 0.72rem;
+  font-weight: 850;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.siteNav {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.85rem;
+  justify-content: flex-end;
+}
+
+.siteNav a,
+.siteHomeLink,
+.siteFooter a {
+  color: #f8f3ef;
+  font-size: 0.86rem;
+  font-weight: 750;
+  text-decoration-color: rgba(255, 255, 255, 0.34);
+  text-underline-offset: 0.24rem;
+}
+
+.siteNav a:hover,
+.siteHomeLink:hover,
+.siteFooter a:hover {
+  color: #ffffff;
+  text-decoration-color: #ffffff;
+}
+
+.siteHomeLink {
+  justify-self: end;
+  white-space: nowrap;
+}
+
+.siteFooter {
+  align-items: center;
+  border-top: 1px solid rgba(255, 255, 255, 0.14);
+  color: #dfcfc8;
+  display: flex;
+  flex-wrap: wrap;
+  font-size: 0.76rem;
+  gap: 0.45rem 1rem;
+  justify-content: space-between;
+  line-height: 1.4;
+  padding: 0.55rem 1.25rem 0.65rem;
+}
+
 .appShell {
   display: grid;
   gap: 1rem;
   grid-template-columns: minmax(0, 1fr) 19rem;
-  height: 100vh;
+  height: 100%;
   min-height: 0;
   overflow: hidden;
   padding: 1rem;
@@ -66,6 +168,7 @@ button:hover {
   min-width: 0;
   min-height: 0;
   overflow: hidden;
+  position: relative;
 }
 
 .controlPanel {
@@ -92,8 +195,7 @@ button:hover {
 .presetStrip {
   align-items: center;
   background:
-    linear-gradient(135deg, rgba(28, 98, 153, 0.08), rgba(15, 118, 110, 0.12)),
-    #f7fafc;
+    linear-gradient(135deg, rgba(28, 98, 153, 0.08), rgba(15, 118, 110, 0.12)), #f7fafc;
   border: 1px solid #dce3eb;
   border-radius: 10px;
   display: grid;
@@ -214,8 +316,7 @@ button:hover {
   border: 1px solid #cbd4df;
   border-radius: 6px;
   color: #18212f;
-  font-family:
-    "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+  font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
   font-size: 0.78rem;
   line-height: 1.45;
   min-height: 10rem;
@@ -557,11 +658,30 @@ button:hover {
   position: absolute;
 }
 
+.worldWatermark {
+  background: rgba(57, 36, 34, 0.68);
+  border: 1px solid rgba(255, 255, 255, 0.24);
+  border-radius: 6px;
+  bottom: 1rem;
+  color: rgba(255, 255, 255, 0.88);
+  font-size: 0.74rem;
+  font-weight: 850;
+  letter-spacing: 0.05em;
+  line-height: 1;
+  padding: 0.42rem 0.55rem;
+  pointer-events: none;
+  position: absolute;
+  right: 1rem;
+  text-transform: uppercase;
+  z-index: 4;
+}
+
 .sidePanel {
   align-content: start;
   display: grid;
   gap: 1rem;
-  max-height: calc(100vh - 2rem);
+  height: 100%;
+  max-height: 100%;
   min-height: 0;
   overflow: auto;
   padding: 1rem;
@@ -849,6 +969,24 @@ button:hover {
 }
 
 @media (max-width: 880px) {
+  .siteFrame {
+    height: auto;
+    min-height: 100vh;
+    overflow: visible;
+  }
+
+  .siteMasthead {
+    grid-template-columns: 1fr;
+  }
+
+  .siteNav {
+    justify-content: flex-start;
+  }
+
+  .siteHomeLink {
+    justify-self: start;
+  }
+
   .appShell {
     grid-template-columns: 1fr;
     height: auto;
@@ -861,8 +999,14 @@ button:hover {
   }
 
   .sidePanel {
+    height: auto;
     max-height: none;
     overflow: visible;
+  }
+
+  .siteFooter {
+    align-items: flex-start;
+    flex-direction: column;
   }
 
   .pixiHost {

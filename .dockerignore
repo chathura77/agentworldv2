@@ -4,6 +4,7 @@ dist
 .vite-dev.pid
 vite-dev.out.log
 vite-dev.err.log
+.playwright-cli
 tsconfig.tsbuildinfo
 npm-debug.log*
 coverage

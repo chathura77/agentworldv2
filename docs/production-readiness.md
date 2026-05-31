@@ -44,6 +44,14 @@ Build the production image:
 docker build -t agentworld:prod .
 ```
 
+If deploying below the main site path, for example
+`https://www.sarathchandra.com/agentworld/`, set the Vite base path at build
+time:
+
+```bash
+docker build --build-arg AGENTWORLD_BASE=/agentworld/ -t agentworld:prod .
+```
+
 Run locally:
 
 ```bash
@@ -55,6 +63,8 @@ Then open `http://127.0.0.1:8080/`.
 The included `Dockerfile` uses a Node build stage and an unprivileged Nginx
 runtime stage. The build stage runs `npm run check`, including dependency
 audit, before copying only static assets and `nginx.conf` into the final image.
+The Nginx config supports both root deployment and `/agentworld/` path
+deployment for the planned `sarathchandra.com` integration.
 
 ## Public VM Checklist
 

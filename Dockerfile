@@ -1,6 +1,8 @@
 FROM node:24-alpine AS build
 
 WORKDIR /app
+ARG AGENTWORLD_BASE=/
+ENV AGENTWORLD_BASE=$AGENTWORLD_BASE
 
 COPY package.json package-lock.json ./
 RUN npm ci

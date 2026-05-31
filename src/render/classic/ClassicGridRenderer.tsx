@@ -7,6 +7,16 @@ import { buildClassicScene, type ClassicSceneCell } from "./classicScene";
 
 interface ClassicGridRendererProps {
   overlays: OverlaySettings;
+  onAddIntelAtCell: (position: Position) => void;
+  onAddPlantAtCell: (
+    type: "green" | "red" | "yellow" | "magenta",
+    position: Position,
+  ) => void;
+  onAddSimpleAtCell: (position: Position) => void;
+  onClearCellCreatures: (position: Position) => void;
+  onClearCellPlants: (position: Position) => void;
+  onRemoveCreature: (id: string) => void;
+  onRemovePlant: (id: string) => void;
   onSelectCell: (position: Position | null) => void;
   onSelectCreature: (id: string) => void;
   selectedCell: Position | null;
@@ -49,6 +59,13 @@ const PLANT_COLORS = {
 
 export function ClassicGridRenderer({
   overlays,
+  onAddIntelAtCell,
+  onAddPlantAtCell,
+  onAddSimpleAtCell,
+  onClearCellCreatures,
+  onClearCellPlants,
+  onRemoveCreature,
+  onRemovePlant,
   onSelectCell,
   onSelectCreature,
   selectedCell,
@@ -193,10 +210,20 @@ export function ClassicGridRenderer({
       <div className="pixiHost" ref={hostRef} />
       {inspectedCell ? (
         <CellInspector
+          cellActions={{
+            onAddIntelAtCell,
+            onAddPlantAtCell,
+            onAddSimpleAtCell,
+            onClearCellCreatures,
+            onClearCellPlants,
+            onRemoveCreature,
+            onRemovePlant,
+            onSelectCell,
+            onSelectCreature,
+          }}
           cell={inspectedCell}
           mode={hoveredCell ? "hovered" : inspectedCell.pinnedHighlighted ? "pinned" : "selected"}
           onClearCellSelection={inspectedCell.pinnedHighlighted ? () => onSelectCell(null) : undefined}
-          onSelectCreature={onSelectCreature}
         />
       ) : null}
       {overlays.debug ? (
@@ -697,15 +724,28 @@ function creatureEnergyColor(state: "low" | "steady" | "surplus") {
 }
 
 export function CellInspector({
+  cellActions,
   cell,
   mode,
   onClearCellSelection,
-  onSelectCreature,
 }: {
+  cellActions: {
+    onAddIntelAtCell: (position: Position) => void;
+    onAddPlantAtCell: (
+      type: "green" | "red" | "yellow" | "magenta",
+      position: Position,
+    ) => void;
+    onAddSimpleAtCell: (position: Position) => void;
+    onClearCellCreatures: (position: Position) => void;
+    onClearCellPlants: (position: Position) => void;
+    onRemoveCreature: (id: string) => void;
+    onRemovePlant: (id: string) => void;
+    onSelectCell: (position: Position | null) => void;
+    onSelectCreature: (id: string) => void;
+  };
   cell: ClassicSceneCell;
   mode: "hovered" | "pinned" | "selected";
   onClearCellSelection?: () => void;
-  onSelectCreature: (id: string) => void;
 }) {
   const tags = [
     cell.pinnedHighlighted ? "pinned" : null,
@@ -729,13 +769,22 @@ export function CellInspector({
         Plants {cell.plants.length} | Creatures {cell.creatureCount} | Fertility{" "}
         {cell.fertility.toFixed(2)}
       </p>
-      {mode === "pinned" && onClearCellSelection ? (
-        <div className="cellInspectorActions">
+      <div className="cellInspectorActions">
+        {mode !== "pinned" ? (
+          <button
+            className="cellInspectorButton"
+            onClick={() => cellActions.onSelectCell(cell.position)}
+            type="button"
+          >
+            Pin cell
+          </button>
+        ) : null}
+        {mode === "pinned" && onClearCellSelection ? (
           <button className="cellInspectorButton" onClick={onClearCellSelection} type="button">
             Clear pinned cell
           </button>
-        </div>
-      ) : null}
+        ) : null}
+      </div>
       {tags.length > 0 ? <p>Flags {tags.join(", ")}</p> : null}
       {cell.intentSources.length > 0 ? (
         <p>
@@ -772,6 +821,62 @@ export function CellInspector({
       ) : (
         <p>No plants</p>
       )}
+      <div className="cellInspectorActions">
+        <button
+          className="cellInspectorButton"
+          onClick={() => cellActions.onAddSimpleAtCell(cell.position)}
+          type="button"
+        >
+          Add simple
+        </button>
+        <button
+          className="cellInspectorButton"
+          onClick={() => cellActions.onAddIntelAtCell(cell.position)}
+          type="button"
+        >
+          Add intel
+        </button>
+        <button
+          className="cellInspectorButton"
+          onClick={() => cellActions.onClearCellCreatures(cell.position)}
+          type="button"
+        >
+          Clear creatures
+        </button>
+      </div>
+      <div className="cellInspectorActions">
+        {(["green", "red", "yellow", "magenta"] as const).map((type) => (
+          <button
+            className="cellInspectorButton"
+            key={type}
+            onClick={() => cellActions.onAddPlantAtCell(type, cell.position)}
+            type="button"
+          >
+            Add {type}
+          </button>
+        ))}
+        <button
+          className="cellInspectorButton"
+          onClick={() => cellActions.onClearCellPlants(cell.position)}
+          type="button"
+        >
+          Clear plants
+        </button>
+      </div>
+      {cell.plants.length > 0 ? (
+        <div className="cellInspectorActions">
+          {cell.plants.map((plant) => (
+            <button
+              className="cellInspectorButton"
+              key={plant.id}
+              onClick={() => cellActions.onRemovePlant(plant.id)}
+              type="button"
+            >
+              Remove {plant.id} {plant.type}
+            </button>
+          ))}
+        </div>
+      ) : null}
       {cell.creatures.length > 0 ? (
         <p>
           {cell.creatures
@@ -787,10 +892,24 @@ export function CellInspector({
             <button
               className={creature.selected ? "cellInspectorButton active" : "cellInspectorButton"}
               key={creature.id}
-              onClick={() => onSelectCreature(creature.id)}
+              onClick={() => cellActions.onSelectCreature(creature.id)}
               type="button"
             >
               Select {creature.id} {creature.kind} {creature.energy}e
+            </button>
+          ))}
+        </div>
+      ) : null}
+      {cell.creatures.length > 0 ? (
+        <div className="cellInspectorActions">
+          {cell.creatures.map((creature) => (
+            <button
+              className="cellInspectorButton"
+              key={`remove-${creature.id}`}
+              onClick={() => cellActions.onRemoveCreature(creature.id)}
+              type="button"
+            >
+              Remove {creature.id}
             </button>
           ))}
         </div>

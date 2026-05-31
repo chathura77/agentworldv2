@@ -7,6 +7,18 @@ import {
 } from "../render/classic/ClassicGridRenderer";
 import type { ClassicSceneCell } from "../render/classic/classicScene";
 
+const cellActions = {
+  onAddIntelAtCell: vi.fn(),
+  onAddPlantAtCell: vi.fn(),
+  onAddSimpleAtCell: vi.fn(),
+  onClearCellCreatures: vi.fn(),
+  onClearCellPlants: vi.fn(),
+  onRemoveCreature: vi.fn(),
+  onRemovePlant: vi.fn(),
+  onSelectCell: vi.fn(),
+  onSelectCreature: vi.fn(),
+};
+
 describe("CellInspector", () => {
   it("renders stacked creature selection controls for the inspected cell", () => {
     const cell: ClassicSceneCell = {
@@ -73,22 +85,32 @@ describe("CellInspector", () => {
 
     const markup = renderToStaticMarkup(
       <CellInspector
+        cellActions={cellActions}
         cell={cell}
         mode="selected"
         onClearCellSelection={vi.fn()}
-        onSelectCreature={vi.fn()}
       />,
     );
 
     expect(markup).toContain("Selected cell 2,2");
+    expect(markup).toContain("Pin cell");
     expect(markup).toContain("Flags selected, previous, linked, observed, plant memory");
     expect(markup).toContain("Intel targeters c2");
     expect(markup).toContain("Plant memory p9 red conf 0.75 seen 5");
     expect(markup).toContain("Creature memory c3 intel conf 0.50 seen 2");
     expect(markup).toContain("c1 simple 88");
     expect(markup).toContain("c2 intel 120");
+    expect(markup).toContain("Add simple");
+    expect(markup).toContain("Add intel");
+    expect(markup).toContain("Clear creatures");
+    expect(markup).toContain("Add green");
+    expect(markup).toContain("Add magenta");
+    expect(markup).toContain("Clear plants");
+    expect(markup).toContain("Remove p1 green");
     expect(markup).toContain("Select c1 simple 88e");
     expect(markup).toContain("Select c2 intel 120e");
+    expect(markup).toContain("Remove c1");
+    expect(markup).toContain("Remove c2");
     expect(markup).toContain("green:100");
   });
 });
