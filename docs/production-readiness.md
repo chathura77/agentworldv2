@@ -66,6 +66,10 @@ audit, before copying only static assets and `nginx.conf` into the final image.
 The Nginx config supports both root deployment and `/agentworld/` path
 deployment for the planned `sarathchandra.com` integration.
 
+For Hostinger VPS deployment, prefer the Docker Compose workflow documented in
+`docs/hostinger-vps-deployment.md`. It binds AgentWorld only to localhost and
+uses the public Nginx site as the reverse proxy.
+
 ## SEO and AI Retrieval Checks
 
 - Confirm `https://www.sarathchandra.com/agentworld/` returns the AgentWorld

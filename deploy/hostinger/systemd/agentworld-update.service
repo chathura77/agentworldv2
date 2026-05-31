@@ -1,0 +1,10 @@
+[Unit]
+Description=Update and restart AgentWorld from Git
+Wants=network-online.target docker.service
+After=network-online.target docker.service
+
+[Service]
+Type=oneshot
+WorkingDirectory=/opt/agentworld
+Environment=APP_DIR=/opt/agentworld
+ExecStart=/opt/agentworld/deploy/hostinger/update.sh

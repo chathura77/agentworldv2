@@ -1,0 +1,10 @@
+[Unit]
+Description=Nightly AgentWorld update check
+
+[Timer]
+OnCalendar=*-*-* 03:20:00
+Persistent=true
+Unit=agentworld-update.service
+
+[Install]
+WantedBy=timers.target

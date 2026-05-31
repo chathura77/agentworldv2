@@ -1,0 +1,31 @@
+name: agentworld
+
+services:
+  web:
+    build:
+      context: ../..
+      dockerfile: Dockerfile
+      args:
+        AGENTWORLD_BASE: ${AGENTWORLD_BASE:-/agentworld/}
+    image: agentworld:${AGENTWORLD_IMAGE_TAG:-hostinger}
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:${AGENTWORLD_HOST_PORT:-8080}:8080"
+    read_only: true
+    tmpfs:
+      - /tmp
+      - /var/cache/nginx
+      - /var/run
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    pids_limit: 128
+    mem_limit: 256m
+    cpus: 0.5
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O", "-", "http://127.0.0.1:8080/agentworld/"]
+      interval: 30s
+      timeout: 3s
+      start_period: 10s
+      retries: 3

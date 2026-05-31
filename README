@@ -116,7 +116,37 @@ docker build --build-arg AGENTWORLD_BASE=/agentworld/ -t agentworld:prod .
 The included Nginx config serves both `/` and `/agentworld/` so the same image
 can be tested locally while still supporting the planned site path.
 
-See `docs/production-readiness.md` and `docs/security-review.md` for the public
+### Hostinger VPS Recommended Path
+
+For `https://www.sarathchandra.com/agentworld/`, use the Hostinger Docker VPS
+template or any Ubuntu VPS with Docker Compose:
+
+```bash
+ssh root@YOUR_VPS_IP
+git clone https://github.com/chathura77/agentworldv2.git /opt/agentworld
+cd /opt/agentworld
+cp deploy/hostinger/.env.example deploy/hostinger/.env
+docker compose --env-file deploy/hostinger/.env -f deploy/hostinger/compose.yaml up -d --build
+```
+
+The Compose service binds the app to `127.0.0.1:8080` only. Add
+`deploy/hostinger/nginx-agentworld-location.conf` to the existing HTTPS Nginx
+server block for `sarathchandra.com`, then run:
+
+```bash
+nginx -t
+systemctl reload nginx
+```
+
+Update later with:
+
+```bash
+APP_DIR=/opt/agentworld /opt/agentworld/deploy/hostinger/update.sh
+```
+
+For full first-deploy, update, optional timer, subdomain, firewall, and rollback
+notes, see `docs/hostinger-vps-deployment.md`. See also
+`docs/production-readiness.md` and `docs/security-review.md` for the public
 VM/container checklist and security review.
 
 ## SEO and AI Indexing
@@ -160,7 +190,8 @@ source comments.
 
 Advanced Mode can be toggled in the shell without resetting the world. It now
 switches the presentation into a Three.js 3D environment with terrain, lighting,
-camera controls, 3D plant/agent meshes, relationship beams, and memory markers.
+camera controls, 3D plant/agent meshes, relationship beams, memory markers,
+fertility heat tiles, intel intent beams, and selected-creature debug path cues.
 The core now also includes deterministic fertility maps when enabled, seasonal
 spawn weighting and plant-energy variation, configurable memory confidence
 decay, utility-scored intel target selection, terrain-aware pursuit routing, and

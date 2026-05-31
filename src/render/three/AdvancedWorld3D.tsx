@@ -7,6 +7,7 @@ import { IntelCreature } from "../../sim/entities/IntelCreature";
 import type { Plant } from "../../sim/entities/Plant";
 import type { PlantType, Position } from "../../sim/entities/types";
 import type { OverlaySettings } from "../../state/useSimulationController";
+import { buildAdvancedOverlayScene } from "./advancedScene";
 
 interface AdvancedWorld3DProps {
   overlays: OverlaySettings;
@@ -265,6 +266,12 @@ function buildDynamicScene(
   overlays: OverlaySettings,
   selectedCreatureId: string | null,
 ) {
+  const overlayScene = buildAdvancedOverlayScene(world, overlays, selectedCreatureId);
+
+  for (const fertilityCell of overlayScene.fertilityCells) {
+    group.add(createFertilityOverlay(fertilityCell.position, fertilityCell.fertility, world));
+  }
+
   for (const plant of world.plants) {
     group.add(createPlantObject(plant, world));
   }
@@ -283,38 +290,17 @@ function buildDynamicScene(
     group.add(object);
   }
 
-  if (overlays.memory) {
-    const selected = world.getCreature(selectedCreatureId);
-    if (selected instanceof IntelCreature) {
-      for (const memory of selected.plantMemory) {
-        const marker = new THREE.Mesh(
-          new THREE.RingGeometry(0.24, 0.3, 24),
-          new THREE.MeshBasicMaterial({
-            color: 0x54a3ff,
-            transparent: true,
-            opacity: Math.max(0.25, memory.confidence),
-            side: THREE.DoubleSide,
-          }),
-        );
-        marker.rotation.x = -Math.PI / 2;
-        marker.position.copy(cellToWorld(memory.position, world.grid.width, world.grid.height));
-        marker.position.y = 0.035;
-        group.add(marker);
-      }
-    }
+  for (const memory of overlayScene.memoryMarkers) {
+    group.add(createMemoryMarker(memory.position, memory.confidence, memory.kind, world));
   }
 
-  if (overlays.relationships) {
-    for (const creature of world.creatures) {
-      if (!(creature instanceof IntelCreature) || !creature.partnerId) {
-        continue;
-      }
-      const partner = world.getCreature(creature.partnerId);
-      if (!partner?.alive) {
-        continue;
-      }
-      group.add(createRelationshipBeam(creature, partner, world));
-    }
+  for (const line of overlayScene.lines) {
+    group.add(createOverlayLine(line.from, line.to, line.kind, line.selected, world));
+  }
+
+  if (overlayScene.focusMarker) {
+    group.add(createFocusMarker(overlayScene.focusMarker.current, selectedCreatureId !== null, world));
+    group.add(createFacingMarker(overlayScene.focusMarker.facing, world));
   }
 }
 
@@ -425,22 +411,99 @@ function createCreatureObject(
   return group;
 }
 
-function createRelationshipBeam(
-  leader: Creature,
-  partner: Creature,
+function createFertilityOverlay(
+  position: Position,
+  fertility: number,
+  world: World,
+): THREE.Mesh {
+  const color = new THREE.Color(0xf3e6d8).lerp(new THREE.Color(0xdaf2d9), fertility);
+  const tile = new THREE.Mesh(
+    new THREE.PlaneGeometry(0.92, 0.92),
+    new THREE.MeshBasicMaterial({
+      color,
+      transparent: true,
+      opacity: 0.42,
+      side: THREE.DoubleSide,
+    }),
+  );
+  tile.rotation.x = -Math.PI / 2;
+  tile.position.copy(cellToWorld(position, world.grid.width, world.grid.height));
+  tile.position.y = 0.03;
+  return tile;
+}
+
+function createMemoryMarker(
+  position: Position,
+  confidence: number,
+  kind: "plant" | "creature",
+  world: World,
+): THREE.Mesh {
+  const marker = new THREE.Mesh(
+    new THREE.RingGeometry(kind === "plant" ? 0.24 : 0.14, kind === "plant" ? 0.3 : 0.22, 24),
+    new THREE.MeshBasicMaterial({
+      color: kind === "plant" ? 0x54a3ff : 0x2bb673,
+      transparent: true,
+      opacity: Math.max(0.25, confidence),
+      side: THREE.DoubleSide,
+    }),
+  );
+  marker.rotation.x = -Math.PI / 2;
+  marker.position.copy(cellToWorld(position, world.grid.width, world.grid.height));
+  marker.position.y = kind === "plant" ? 0.035 : 0.055;
+  return marker;
+}
+
+function createOverlayLine(
+  fromPosition: Position,
+  toPosition: Position,
+  kind: "intent" | "relationship" | "previous" | "facing" | "target" | "linked",
+  selected: boolean,
   world: World,
 ): THREE.Line {
-  const start = cellToWorld(leader.position, world.grid.width, world.grid.height);
-  const end = cellToWorld(partner.position, world.grid.width, world.grid.height);
-  start.y = 0.72;
-  end.y = 0.72;
+  const start = cellToWorld(fromPosition, world.grid.width, world.grid.height);
+  const end = cellToWorld(toPosition, world.grid.width, world.grid.height);
+  start.y = lineHeight(kind);
+  end.y = lineHeight(kind);
   const geometry = new THREE.BufferGeometry().setFromPoints([start, end]);
   const material = new THREE.LineBasicMaterial({
-    color: 0xffdf5d,
+    color: lineColor(kind),
     transparent: true,
-    opacity: 0.82,
+    opacity: selected ? 0.95 : lineOpacity(kind),
   });
   return new THREE.Line(geometry, material);
+}
+
+function createFocusMarker(
+  position: Position,
+  selected: boolean,
+  world: World,
+): THREE.Mesh {
+  const marker = new THREE.Mesh(
+    new THREE.TorusGeometry(0.32, 0.025, 8, 32),
+    new THREE.MeshBasicMaterial({
+      color: 0x1f9d73,
+      transparent: true,
+      opacity: selected ? 0.92 : 0.72,
+    }),
+  );
+  marker.rotation.x = Math.PI / 2;
+  marker.position.copy(cellToWorld(position, world.grid.width, world.grid.height));
+  marker.position.y = 0.08;
+  return marker;
+}
+
+function createFacingMarker(position: Position, world: World): THREE.Mesh {
+  const marker = new THREE.Mesh(
+    new THREE.ConeGeometry(0.11, 0.22, 12),
+    new THREE.MeshBasicMaterial({
+      color: 0x0f766e,
+      transparent: true,
+      opacity: 0.9,
+    }),
+  );
+  marker.position.copy(cellToWorld(position, world.grid.width, world.grid.height));
+  marker.position.y = 0.24;
+  return marker;
 }
 
 function cellToWorld(position: Position, width: number, height: number): THREE.Vector3 {
@@ -471,6 +534,61 @@ function directionVector(direction: string): { x: number; z: number } {
       return { x: -1, z: -1 };
     default:
       return { x: 0, z: 1 };
+  }
+}
+
+function lineColor(kind: "intent" | "relationship" | "previous" | "facing" | "target" | "linked") {
+  switch (kind) {
+    case "intent":
+      return 0xf97316;
+    case "relationship":
+      return 0xffdf5d;
+    case "previous":
+      return 0x7c3aed;
+    case "facing":
+      return 0x0f766e;
+    case "target":
+      return 0xf59e0b;
+    case "linked":
+      return 0x9b7a05;
+    default:
+      return 0xffffff;
+  }
+}
+
+function lineOpacity(kind: "intent" | "relationship" | "previous" | "facing" | "target" | "linked") {
+  switch (kind) {
+    case "intent":
+      return 0.5;
+    case "relationship":
+      return 0.82;
+    case "previous":
+    case "facing":
+      return 0.88;
+    case "target":
+      return 0.76;
+    case "linked":
+      return 0.56;
+    default:
+      return 0.75;
+  }
+}
+
+function lineHeight(kind: "intent" | "relationship" | "previous" | "facing" | "target" | "linked") {
+  switch (kind) {
+    case "relationship":
+      return 0.72;
+    case "intent":
+      return 0.64;
+    case "previous":
+    case "facing":
+      return 0.78;
+    case "target":
+      return 0.68;
+    case "linked":
+      return 0.74;
+    default:
+      return 0.7;
   }
 }
 
