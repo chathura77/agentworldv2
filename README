@@ -55,7 +55,9 @@ plus per-cell clear/remove actions and selected-creature energy nudges/removal
 for faster deterministic scenario editing.
 The Classic viewport inspector now also reports selected-creature context per
 cell, including previous/ahead/linked flags, remembered plant or creature
-entries in that square, and intel targeters currently pursuing it.
+entries in that square, and intel targeters currently pursuing it. Advanced 3D
+zoom stays clear at wider camera distances, and the event log is constrained to
+an internal scrolling panel so new events do not move the grid viewport.
 
 ## Run
 
@@ -71,6 +73,26 @@ npm test
 npm run typecheck
 npm run lint
 ```
+
+The full local production gate is:
+
+```bash
+npm run check
+```
+
+## Production Deployment
+
+Build and serve only the static `dist/` output on public infrastructure. Do not
+expose `npm run dev`, Vite preview, Node, npm, or the Docker API to the public
+internet.
+
+```bash
+docker build -t agentworld:prod .
+docker run --rm -p 8080:8080 agentworld:prod
+```
+
+See `docs/production-readiness.md` and `docs/security-review.md` for the public
+VM/container checklist and security review.
 
 ## Classic Mode Mapping
 

@@ -55,7 +55,6 @@ export function AdvancedWorld3D({
 
     const scene = new THREE.Scene();
     scene.background = new THREE.Color(0xbfd8ee);
-    scene.fog = new THREE.Fog(0xbfd8ee, 8, 28);
 
     const renderer = new THREE.WebGLRenderer({
       antialias: true,
@@ -67,15 +66,16 @@ export function AdvancedWorld3D({
     renderer.shadowMap.type = THREE.PCFSoftShadowMap;
     host.appendChild(renderer.domElement);
 
-    const camera = new THREE.PerspectiveCamera(52, 1, 0.1, 100);
     const maxGrid = Math.max(world.grid.width, world.grid.height);
+    const cameraFar = Math.max(100, maxGrid * 8);
+    const camera = new THREE.PerspectiveCamera(52, 1, 0.1, cameraFar);
     camera.position.set(maxGrid * 0.55, maxGrid * 1.15, maxGrid * 1.25);
 
     const controls = new OrbitControls(camera, renderer.domElement);
     controls.enableDamping = true;
     controls.maxPolarAngle = Math.PI * 0.48;
     controls.minDistance = 4;
-    controls.maxDistance = 28;
+    controls.maxDistance = Math.max(28, maxGrid * 3.2);
     controls.target.set(0, 0, 0);
     controls.update();
 
