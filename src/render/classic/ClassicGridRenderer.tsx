@@ -387,6 +387,32 @@ export function drawGrid(
         container.addChild(selectedOutline);
       }
 
+      if (cell.previousHighlighted) {
+        const previousOutline = new Graphics();
+        previousOutline
+          .rect(
+            x + 14,
+            y + 14,
+            Math.max(0, layout.cellSize - 28),
+            Math.max(0, layout.cellSize - 28),
+          )
+          .stroke({ color: PREVIOUS_PATH_COLOR, width: 2, alpha: 0.6 });
+        container.addChild(previousOutline);
+      }
+
+      if (cell.facingHighlighted) {
+        const facingOutline = new Graphics();
+        facingOutline
+          .rect(
+            x + 18,
+            y + 18,
+            Math.max(0, layout.cellSize - 36),
+            Math.max(0, layout.cellSize - 36),
+          )
+          .stroke({ color: FACING_PATH_COLOR, width: 2, alpha: 0.72 });
+        container.addChild(facingOutline);
+      }
+
       if (cell.targetHighlighted) {
         const targetOutline = new Graphics();
         targetOutline
@@ -398,6 +424,19 @@ export function drawGrid(
           )
           .stroke({ color: TARGET_CELL_COLOR, width: 2, alpha: 0.95 });
         container.addChild(targetOutline);
+      }
+
+      if (cell.linkedHighlighted) {
+        const linkedOutline = new Graphics();
+        linkedOutline
+          .rect(
+            x + 22,
+            y + 22,
+            Math.max(0, layout.cellSize - 44),
+            Math.max(0, layout.cellSize - 44),
+          )
+          .stroke({ color: RELATIONSHIP_COLOR, width: 2, alpha: 0.62 });
+        container.addChild(linkedOutline);
       }
 
       const debugText = new Text({
@@ -671,6 +710,9 @@ export function CellInspector({
   const tags = [
     cell.pinnedHighlighted ? "pinned" : null,
     cell.selectedHighlighted ? "selected" : null,
+    cell.previousHighlighted ? "previous" : null,
+    cell.facingHighlighted ? "ahead" : null,
+    cell.linkedHighlighted ? "linked" : null,
     cell.observedHighlighted ? "observed" : null,
     cell.targetHighlighted ? "target" : null,
     cell.plantMemoryHighlighted ? "plant memory" : null,
@@ -695,6 +737,36 @@ export function CellInspector({
         </div>
       ) : null}
       {tags.length > 0 ? <p>Flags {tags.join(", ")}</p> : null}
+      {cell.intentSources.length > 0 ? (
+        <p>
+          Intel targeters{" "}
+          {cell.intentSources
+            .map((intent) => `${intent.creatureId}${intent.selected ? " (selected)" : ""}`)
+            .join(", ")}
+        </p>
+      ) : null}
+      {cell.plantMemories.length > 0 ? (
+        <p>
+          Plant memory{" "}
+          {cell.plantMemories
+            .map(
+              (entry) =>
+                `${entry.plantId} ${entry.type} conf ${entry.confidence.toFixed(2)} seen ${entry.lastSeenTicksAgo}`,
+            )
+            .join(" | ")}
+        </p>
+      ) : null}
+      {cell.creatureMemories.length > 0 ? (
+        <p>
+          Creature memory{" "}
+          {cell.creatureMemories
+            .map(
+              (entry) =>
+                `${entry.creatureId} ${entry.kind} conf ${entry.confidence.toFixed(2)} seen ${entry.lastSeenTicksAgo}`,
+            )
+            .join(" | ")}
+        </p>
+      ) : null}
       {cell.plants.length > 0 ? (
         <p>{cell.plants.map((plant) => `${plant.type}:${plant.energy}`).join(", ")}</p>
       ) : (

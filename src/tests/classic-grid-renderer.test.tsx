@@ -20,7 +20,32 @@ describe("CellInspector", () => {
       selectedHighlighted: true,
       observedHighlighted: true,
       targetHighlighted: false,
+      previousHighlighted: true,
+      facingHighlighted: false,
+      linkedHighlighted: true,
       creatureCount: 2,
+      plantMemories: [
+        {
+          plantId: "p9",
+          type: "red",
+          confidence: 0.75,
+          lastSeenTicksAgo: 5,
+        },
+      ],
+      creatureMemories: [
+        {
+          creatureId: "c3",
+          kind: "intel",
+          confidence: 0.5,
+          lastSeenTicksAgo: 2,
+        },
+      ],
+      intentSources: [
+        {
+          creatureId: "c2",
+          selected: false,
+        },
+      ],
       creatures: [
         {
           id: "c1",
@@ -56,7 +81,10 @@ describe("CellInspector", () => {
     );
 
     expect(markup).toContain("Selected cell 2,2");
-    expect(markup).toContain("Flags selected, observed, plant memory");
+    expect(markup).toContain("Flags selected, previous, linked, observed, plant memory");
+    expect(markup).toContain("Intel targeters c2");
+    expect(markup).toContain("Plant memory p9 red conf 0.75 seen 5");
+    expect(markup).toContain("Creature memory c3 intel conf 0.50 seen 2");
     expect(markup).toContain("c1 simple 88");
     expect(markup).toContain("c2 intel 120");
     expect(markup).toContain("Select c1 simple 88e");
@@ -78,7 +106,13 @@ describe("drawGrid", () => {
       selectedHighlighted: false,
       observedHighlighted: false,
       targetHighlighted: false,
+      previousHighlighted: false,
+      facingHighlighted: false,
+      linkedHighlighted: false,
       creatureCount: 0,
+      plantMemories: [],
+      creatureMemories: [],
+      intentSources: [],
       creatures: [],
       plants: [],
     };

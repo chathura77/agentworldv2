@@ -15,7 +15,26 @@ export interface ClassicSceneCell {
   selectedHighlighted: boolean;
   observedHighlighted: boolean;
   targetHighlighted: boolean;
+  previousHighlighted: boolean;
+  facingHighlighted: boolean;
+  linkedHighlighted: boolean;
   creatureCount: number;
+  plantMemories: Array<{
+    plantId: string;
+    type: string;
+    confidence: number;
+    lastSeenTicksAgo: number;
+  }>;
+  creatureMemories: Array<{
+    creatureId: string;
+    kind: Creature["kind"];
+    confidence: number;
+    lastSeenTicksAgo: number;
+  }>;
+  intentSources: Array<{
+    creatureId: string;
+    selected: boolean;
+  }>;
   creatures: Array<{
     id: string;
     kind: Creature["kind"];
@@ -107,16 +126,26 @@ export function buildClassicScene(
   const selectedCellKey = selectedCreature
     ? positionKey(selectedCreature.position)
     : null;
+  const previousCellKey = selectedCreature
+    ? positionKey(selectedCreature.previousPosition)
+    : null;
   const pinnedCellKey = selectedCell ? positionKey(selectedCell) : null;
   const desiredPlantPosition =
     selectedCreature instanceof IntelCreature
       ? world.getPlant(selectedCreature.desiredPlantId)?.position ?? null
       : null;
   const targetCellKey = desiredPlantPosition ? positionKey(desiredPlantPosition) : null;
+  const facingCellKey = selectedCreature
+    ? positionKey(
+        world.grid.ahead(selectedCreature.position, selectedCreature.facing, 1)[1] ??
+          selectedCreature.position,
+      )
+    : null;
   const linkedCreature =
     selectedCreature instanceof IntelCreature
       ? world.getCreature(selectedCreature.partnerId ?? selectedCreature.leaderId)
       : null;
+  const linkedCellKey = linkedCreature ? positionKey(linkedCreature.position) : null;
   const aliveCreatures = world.creatures.filter((creature) => creature.alive);
 
   const cells: ClassicSceneCell[] = [];
@@ -124,6 +153,28 @@ export function buildClassicScene(
     for (let x = 0; x < world.grid.width; x += 1) {
       const position = { x, y };
       const key = positionKey(position);
+      const plantMemories =
+        selectedCreature instanceof IntelCreature && overlays.memory
+          ? selectedCreature.plantMemory
+              .filter((entry) => entry.position.x === x && entry.position.y === y)
+              .map((entry) => ({
+                plantId: entry.plantId,
+                type: entry.type,
+                confidence: entry.confidence,
+                lastSeenTicksAgo: Math.max(0, world.tick - entry.lastSeenTick),
+              }))
+          : [];
+      const creatureMemories =
+        selectedCreature instanceof IntelCreature && overlays.memory
+          ? selectedCreature.creatureMemory
+              .filter((entry) => entry.position.x === x && entry.position.y === y)
+              .map((entry) => ({
+                creatureId: entry.creatureId,
+                kind: entry.kind,
+                confidence: entry.confidence,
+                lastSeenTicksAgo: Math.max(0, world.tick - entry.lastSeenTick),
+              }))
+          : [];
       const creatures = aliveCreatures
         .filter((creature) => creature.position.x === x && creature.position.y === y)
         .map((creature) => ({
@@ -144,7 +195,24 @@ export function buildClassicScene(
         selectedHighlighted: selectedCellKey === key,
         observedHighlighted: observedCells.has(key),
         targetHighlighted: targetCellKey === key,
+        previousHighlighted: previousCellKey === key,
+        facingHighlighted: facingCellKey === key,
+        linkedHighlighted: linkedCellKey === key,
         creatureCount: creatures.length,
+        plantMemories,
+        creatureMemories,
+        intentSources: overlays.intent
+          ? aliveCreatures
+              .filter((creature): creature is IntelCreature => creature instanceof IntelCreature)
+              .filter((creature) => {
+                const target = world.getPlant(creature.desiredPlantId);
+                return target?.position.x === x && target.position.y === y;
+              })
+              .map((creature) => ({
+                creatureId: creature.id,
+                selected: creature.id === selectedCreatureId,
+              }))
+          : [],
         creatures,
         plants: world.plants
           .filter((plant) => plant.position.x === x && plant.position.y === y)
