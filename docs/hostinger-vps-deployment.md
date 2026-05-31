@@ -8,7 +8,9 @@ VPS while keeping updates and maintenance simple.
 - DNS points `agentworld.sarathchandra.com` to the Hostinger VPS.
 - The existing Ghost records for `sarathchandra.com` and `www` stay unchanged.
 - The public VPS web server terminates TLS and proxies the subdomain root.
-- AgentWorld runs as a local-only Docker Compose service on `127.0.0.1:8080`.
+- AgentWorld runs as a local-only Docker Compose service on `127.0.0.1:18080`.
+- Existing services such as `quantum-workbench.sarathchandra.com` stay in their
+  own Nginx server blocks and local ports.
 - The container serves static files from unprivileged Nginx.
 - Updates are a repeatable Git pull plus Docker Compose rebuild.
 
@@ -58,61 +60,85 @@ IP with A records, and propagation can take up to 24 hours. Hostinger's managed
 VPS firewall should allow only the traffic you actually need, usually `80`,
 `443`, and locked-down `22`.
 
-## First Deploy
+## GitHub Actions Secrets and Variables
 
-SSH into the VPS:
+Set these repository secrets:
 
-```bash
-ssh root@YOUR_VPS_IP
+```text
+HOSTINGER_HOST=YOUR_HOSTINGER_VPS_IPV4
+HOSTINGER_USER=root
+HOSTINGER_SSH_PRIVATE_KEY=<private key allowed to SSH into the VPS>
+HOSTINGER_KNOWN_HOSTS=<output of: ssh-keyscan -H YOUR_HOSTINGER_VPS_IPV4>
+AGENTWORLD_LETSENCRYPT_EMAIL=you@example.com
 ```
 
-Install base tools if the VPS template does not already include them:
+Set these repository variables:
 
-```bash
-apt update
-apt install -y git nginx certbot python3-certbot-nginx
+```text
+HOSTINGER_SSH_PORT=22
+AGENTWORLD_APP_DIR=/opt/agentworld
+AGENTWORLD_DOMAIN=agentworld.sarathchandra.com
+AGENTWORLD_BASE=/
+AGENTWORLD_HEALTH_PATH=/
+AGENTWORLD_HOST_PORT=18080
+AGENTWORLD_IMAGE_TAG=hostinger
+AGENTWORLD_ENABLE_CERTBOT=1
+AGENTWORLD_AUTO_DEPLOY=0
 ```
 
-Clone the repo into a stable app directory:
+`HOSTINGER_KNOWN_HOSTS` is optional but recommended. Keep
+`AGENTWORLD_AUTO_DEPLOY=0` until the first deployment is verified; set it to `1`
+later if you want successful `master` CI runs to deploy automatically.
 
-```bash
-mkdir -p /opt
-git clone https://github.com/chathura77/agentworldv2.git /opt/agentworld
-cd /opt/agentworld
-```
+## First Deploy Through GitHub Actions
 
-Create the deployment env file:
+1. Add the DNS A record for `agentworld`.
+2. Confirm the VPS firewall allows `80`, `443`, and restricted SSH only.
+3. Confirm Docker with the Compose plugin is available on the VPS. Hostinger's
+   Docker VPS template already provides this.
+4. Open GitHub `Actions` -> `Deploy Hostinger VPS` -> `Run workflow`.
+5. Set `deploy_ref=master`, set `bootstrap=true`, and run the workflow.
 
-```bash
-cp deploy/hostinger/.env.example deploy/hostinger/.env
-```
+The bootstrap workflow SSHes into the VPS, clones the repo into
+`/opt/agentworld`, writes `deploy/hostinger/.env`, starts the Compose service,
+installs the `agentworld.sarathchandra.com` Nginx server block, reloads Nginx,
+and runs Certbot when `AGENTWORLD_ENABLE_CERTBOT=1`.
 
-For the recommended subdomain deployment, keep:
+The generated deployment env uses:
 
 ```bash
 AGENTWORLD_BASE=/
 AGENTWORLD_HEALTH_PATH=/
-AGENTWORLD_HOST_PORT=8080
+AGENTWORLD_HOST_PORT=18080
 ```
 
-Start the service:
+## VPS Manual Fallback
+
+The same bootstrap can be run directly over SSH if GitHub Actions is unavailable:
 
 ```bash
-docker compose --env-file deploy/hostinger/.env -f deploy/hostinger/compose.yaml up -d --build
+ssh root@YOUR_HOSTINGER_VPS_IPV4
+curl -fsSL https://raw.githubusercontent.com/chathura77/agentworldv2/master/deploy/hostinger/bootstrap.sh -o /tmp/agentworld-bootstrap.sh
+APP_DIR=/opt/agentworld \
+AGENTWORLD_DOMAIN=agentworld.sarathchandra.com \
+AGENTWORLD_HOST_PORT=18080 \
+AGENTWORLD_ENABLE_CERTBOT=1 \
+AGENTWORLD_LETSENCRYPT_EMAIL=you@example.com \
+bash /tmp/agentworld-bootstrap.sh
 ```
 
 Verify locally on the VPS:
 
 ```bash
-curl -I http://127.0.0.1:8080/
-curl -I http://127.0.0.1:8080/llms.txt
+curl -I http://127.0.0.1:18080/
+curl -I http://127.0.0.1:18080/llms.txt
 docker compose --env-file deploy/hostinger/.env -f deploy/hostinger/compose.yaml ps
 ```
 
 ## Reverse Proxy for the Subdomain
 
-Use `deploy/hostinger/nginx-agentworld-subdomain.conf` as the Nginx server block
-for `agentworld.sarathchandra.com`.
+The GitHub bootstrap writes the Nginx server block automatically. The checked-in
+reference file is `deploy/hostinger/nginx-agentworld-subdomain.conf`.
 
 Then reload Nginx:
 
@@ -144,7 +170,11 @@ you control.
 
 ## Updates
 
-The update script is the normal maintenance path:
+Push changes to `master` and wait for CI. Then either run `Deploy Hostinger VPS`
+manually with `deploy_ref=master` and `bootstrap=false`, or set
+`AGENTWORLD_AUTO_DEPLOY=1` so a green `master` CI run deploys automatically.
+
+The workflow SSHes into the VPS and runs the update script:
 
 ```bash
 APP_DIR=/opt/agentworld /opt/agentworld/deploy/hostinger/update.sh
@@ -166,18 +196,16 @@ ln -sf /opt/agentworld/deploy/hostinger/update.sh /usr/local/bin/update-agentwor
 update-agentworld
 ```
 
-## GitHub Actions Boundary
+## GitHub Actions Flow
 
-GitHub Actions validates every push and pull request to `master` before you pull
-updates onto the VPS. The CI workflow runs `npm run check`, validates the
-Hostinger Compose file, builds the production Docker image with
-`AGENTWORLD_BASE=/`, and smoke-tests the subdomain-root app plus AI indexing
-resources.
+The `CI` workflow validates every push and pull request to `master`. The
+`Deploy Hostinger VPS` workflow can run manually, and can also run automatically
+after CI when `AGENTWORLD_AUTO_DEPLOY=1`. Deployment is isolated to the
+`agentworld` Compose project and the `agentworld.sarathchandra.com` Nginx server
+block, so it does not rewrite the existing `quantum-workbench` site.
 
-The workflow intentionally does not SSH into the VPS yet. Production updates
-remain an explicit `update-agentworld` or `deploy/hostinger/update.sh` action on
-the server until deploy secrets, a protected GitHub environment, and rollback
-policy are configured.
+For rollback through GitHub Actions, run `Deploy Hostinger VPS` manually with
+`deploy_ref` set to a known-good commit SHA and `bootstrap=false`.
 
 ## Optional Scheduled Updates
 
@@ -207,7 +235,7 @@ docker image prune -f
 ```
 
 Use Hostinger hPanel Firewall plus the OS firewall so only `80/443` are public
-and SSH is restricted to trusted admin IPs. Do not publish `8080`, `5173`, the
+and SSH is restricted to trusted admin IPs. Do not publish `18080`, `5173`, the
 Docker API, npm, Node, or Vite to the internet.
 
 ## Official References

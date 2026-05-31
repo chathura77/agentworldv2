@@ -28,9 +28,13 @@ then validates the Hostinger Compose file and smoke-tests a Docker image built
 for the subdomain root. Treat a green workflow as the precondition for pulling the
 latest commit onto the VPS.
 
+The `Deploy Hostinger VPS` workflow deploys through SSH. Keep
+`AGENTWORLD_AUTO_DEPLOY=0` until the first manual bootstrap succeeds; set it to
+`1` only when automatic deployment after green `master` CI is desired.
+
 Current verified gate for this update:
 
-- `npm test`: 59 tests passed.
+- `npm test`: 60 tests passed.
 - `npm run lint`: passed.
 - `npm run typecheck`: passed.
 - `npm audit --audit-level=moderate`: zero vulnerabilities after upgrading

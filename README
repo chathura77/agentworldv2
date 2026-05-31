@@ -89,7 +89,7 @@ The npm scripts use Vite/Vitest's native config loader, and Vitest runs on the
 thread pool so the standard commands stay compatible with sandboxed Windows
 environments where child-process spawning is restricted.
 
-## GitHub Actions CI
+## GitHub Actions CI and Deployment
 
 GitHub Actions runs on pushes and pull requests to `master`. The workflow uses
 Node.js 24, installs dependencies with `npm ci`, runs the same local production
@@ -97,9 +97,10 @@ gate via `npm run check`, validates the Hostinger Docker Compose config, builds
 the production Docker image with `AGENTWORLD_BASE=/`, and smoke-tests the
 mounted app plus `llms.txt` and `ai-index.json`.
 
-Deployment to the VPS is still controlled by the Hostinger update script below.
-That keeps production changes explicit until a later deploy workflow is wired to
-GitHub environment secrets.
+The `Deploy Hostinger VPS` workflow deploys through SSH after the repository
+secrets and variables below are configured. Manual deployments are available
+from the GitHub Actions tab. Automatic deployment after a green `master` CI run
+is opt-in with `AGENTWORLD_AUTO_DEPLOY=1`.
 
 ## Production Deployment
 
@@ -135,75 +136,101 @@ agentworld.sarathchandra.com
 Create an A record named `agentworld` pointing to the Hostinger VPS IPv4
 address. Leave the existing `@`, `www`, mail, verification, Minecraft, and
 GoDaddy-managed records unchanged. The app runs as a local-only container on
-`127.0.0.1:8080`; the public Nginx subdomain site proxies to it.
+`127.0.0.1:18080`; the public Nginx subdomain site proxies to it. This keeps
+AgentWorld isolated beside existing sites such as
+`quantum-workbench.sarathchandra.com`.
 
-First deploy:
+### GitHub Actions First Deploy
 
-```bash
-ssh root@YOUR_VPS_IP
-apt update
-apt install -y git nginx certbot python3-certbot-nginx
-mkdir -p /opt
-git clone https://github.com/chathura77/agentworldv2.git /opt/agentworld
-cd /opt/agentworld
-cp deploy/hostinger/.env.example deploy/hostinger/.env
-docker compose --env-file deploy/hostinger/.env -f deploy/hostinger/compose.yaml up -d --build
+1. In DNS, add:
+
+```text
+Type: A
+Name: agentworld
+Data: YOUR_HOSTINGER_VPS_IPV4
+TTL: 600 seconds or 1/2 Hour
 ```
 
-Keep these defaults in `deploy/hostinger/.env` for the subdomain deployment:
+2. In the GitHub repository, add these Actions secrets:
 
-```bash
+```text
+HOSTINGER_HOST=YOUR_HOSTINGER_VPS_IPV4
+HOSTINGER_USER=root
+HOSTINGER_SSH_PRIVATE_KEY=<private key allowed to SSH into the VPS>
+HOSTINGER_KNOWN_HOSTS=<output of: ssh-keyscan -H YOUR_HOSTINGER_VPS_IPV4>
+AGENTWORLD_LETSENCRYPT_EMAIL=you@example.com
+```
+
+`HOSTINGER_KNOWN_HOSTS` is optional but recommended. If omitted, the workflow
+will collect the host key during the run.
+
+3. Add these Actions variables:
+
+```text
+HOSTINGER_SSH_PORT=22
+AGENTWORLD_APP_DIR=/opt/agentworld
+AGENTWORLD_DOMAIN=agentworld.sarathchandra.com
 AGENTWORLD_BASE=/
 AGENTWORLD_HEALTH_PATH=/
-AGENTWORLD_HOST_PORT=8080
+AGENTWORLD_HOST_PORT=18080
+AGENTWORLD_IMAGE_TAG=hostinger
+AGENTWORLD_ENABLE_CERTBOT=1
+AGENTWORLD_AUTO_DEPLOY=0
 ```
 
-Verify on the VPS:
+Use `AGENTWORLD_AUTO_DEPLOY=0` for the first deployment. Change it to `1` only
+after the first successful production run if you want every green `master` CI
+run to deploy automatically.
+
+4. In GitHub, open `Actions` -> `Deploy Hostinger VPS` -> `Run workflow`, set
+   `deploy_ref=master`, set `bootstrap=true`, and run it.
+
+The bootstrap run SSHes into the VPS, installs missing Nginx/Certbot basics,
+clones this repository into `/opt/agentworld`, writes
+`deploy/hostinger/.env`, starts the Docker Compose service, creates a separate
+Nginx server block for `agentworld.sarathchandra.com`, reloads Nginx, and issues
+the Let's Encrypt certificate when `AGENTWORLD_ENABLE_CERTBOT=1`.
+
+5. Verify:
 
 ```bash
-curl -I http://127.0.0.1:8080/
-curl -I http://127.0.0.1:8080/llms.txt
-docker compose --env-file deploy/hostinger/.env -f deploy/hostinger/compose.yaml ps
+curl -I https://agentworld.sarathchandra.com/
+curl -I https://agentworld.sarathchandra.com/llms.txt
+curl -I https://agentworld.sarathchandra.com/ai-index.json
 ```
 
-Install `deploy/hostinger/nginx-agentworld-subdomain.conf` as the Nginx server
-block for `agentworld.sarathchandra.com`, then reload Nginx:
+### Updating Production Through GitHub Actions
+
+For normal updates, commit and push to `master`. GitHub Actions will run CI
+first. Then either:
+
+- run `Deploy Hostinger VPS` manually with `deploy_ref=master` and
+  `bootstrap=false`, or
+- set `AGENTWORLD_AUTO_DEPLOY=1` to deploy automatically after successful CI on
+  `master`.
+
+The deploy job SSHes into the VPS and runs:
 
 ```bash
-nginx -t
-systemctl reload nginx
+APP_DIR=/opt/agentworld BRANCH=master /opt/agentworld/deploy/hostinger/update.sh
 ```
 
-Issue TLS after DNS points to the VPS:
+That update script loads `deploy/hostinger/.env`, fetches `origin/master`,
+fast-forward pulls, rebuilds the Docker image, restarts the Compose service, and
+health-checks the configured local URL.
+
+### Manual VPS Fallback
+
+If GitHub Actions is unavailable, run the same update directly on the VPS:
 
 ```bash
-certbot --nginx -d agentworld.sarathchandra.com
+ssh root@YOUR_HOSTINGER_VPS_IPV4
+APP_DIR=/opt/agentworld /opt/agentworld/deploy/hostinger/update.sh
 ```
 
 If you later move `sarathchandra.com` off Ghost and control the main web server,
 the path deployment remains available with `AGENTWORLD_BASE=/agentworld/` and
 `deploy/hostinger/nginx-agentworld-location.conf`.
-
-### Updating Production
-
-Development changes should be committed and pushed to GitHub first. Wait for
-GitHub Actions to pass, then update the VPS:
-
-```bash
-APP_DIR=/opt/agentworld /opt/agentworld/deploy/hostinger/update.sh
-```
-
-For a shorter operator command:
-
-```bash
-chmod +x /opt/agentworld/deploy/hostinger/update.sh
-ln -sf /opt/agentworld/deploy/hostinger/update.sh /usr/local/bin/update-agentworld
-update-agentworld
-```
-
-The update script loads `deploy/hostinger/.env`, fetches `origin/master`,
-fast-forward pulls, rebuilds the Docker image, restarts the Compose service, and
-health-checks the configured local URL.
 
 ### Maintenance
 
@@ -219,27 +246,20 @@ systemctl status nginx --no-pager
 ```
 
 Keep only `80` and `443` public, and restrict `22` to trusted admin IPs. Do not
-publish `8080`, `5173`, the Docker API, npm, Node, or Vite to the internet.
-After deployment, confirm:
-
-```bash
-curl -I https://agentworld.sarathchandra.com/
-curl -I https://agentworld.sarathchandra.com/llms.txt
-curl -I https://agentworld.sarathchandra.com/ai-index.json
-```
+publish `18080`, `5173`, the Docker API, npm, Node, or Vite to the internet.
 
 ### Rollback
 
 If a production update misbehaves, roll back by checking out a known-good commit
-and rebuilding:
+and rebuilding, or run the `Deploy Hostinger VPS` workflow with
+`deploy_ref=GOOD_COMMIT_SHA` and `bootstrap=false`.
 
 ```bash
 cd /opt/agentworld
 git fetch origin
 git log --oneline -5
-git checkout GOOD_COMMIT_SHA
-docker compose --env-file deploy/hostinger/.env -f deploy/hostinger/compose.yaml up -d --build --remove-orphans
-curl -I http://127.0.0.1:8080/
+DEPLOY_REF=GOOD_COMMIT_SHA APP_DIR=/opt/agentworld /opt/agentworld/deploy/hostinger/update.sh
+curl -I http://127.0.0.1:18080/
 ```
 
 When the issue is fixed on `master`, return the VPS checkout to the branch:

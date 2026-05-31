@@ -55,7 +55,7 @@ jobs:
       - name: Validate Hostinger Compose config
         run: docker compose --env-file deploy/hostinger/.env.example -f deploy/hostinger/compose.yaml config
 
-      - name: Build production image for path deployment
+      - name: Build production image for subdomain deployment
         run: docker build --build-arg AGENTWORLD_BASE="$AGENTWORLD_BASE" -t "$IMAGE_NAME" .
 
       - name: Smoke test production container

@@ -32,7 +32,23 @@ describe("GitHub Actions CI", () => {
 
     expect(readme).toContain("GitHub Actions CI");
     expect(deploymentDocs).toContain("GitHub Actions");
-    expect(deploymentDocs).toContain("does not SSH into the VPS");
+    expect(deploymentDocs).toContain("Deploy Hostinger VPS");
+    expect(deploymentDocs).toContain("AGENTWORLD_AUTO_DEPLOY=0");
     expect(productionDocs).toContain("GitHub Actions CI");
+  });
+
+  it("defines a gated Hostinger deployment workflow", () => {
+    const workflow = readFileSync(".github/workflows/deploy-hostinger.yml", "utf8");
+
+    expect(workflow).toContain("workflow_dispatch:");
+    expect(workflow).toContain("deploy_ref:");
+    expect(workflow).toContain("workflow_run:");
+    expect(workflow).toContain("AGENTWORLD_AUTO_DEPLOY == '1'");
+    expect(workflow).toContain("HOSTINGER_HOST");
+    expect(workflow).toContain("HOSTINGER_SSH_PRIVATE_KEY");
+    expect(workflow).toContain("deploy/hostinger/bootstrap.sh");
+    expect(workflow).toContain("deploy/hostinger/update.sh");
+    expect(workflow).toContain("DEPLOY_REF");
+    expect(workflow).toContain("https://$AGENTWORLD_DOMAIN/");
   });
 });

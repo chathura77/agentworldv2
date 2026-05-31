@@ -6,7 +6,7 @@ describe("Hostinger VPS deployment artifacts", () => {
     const compose = readFileSync("deploy/hostinger/compose.yaml", "utf8");
 
     expect(compose).toContain("AGENTWORLD_BASE: ${AGENTWORLD_BASE:-/}");
-    expect(compose).toContain('"127.0.0.1:${AGENTWORLD_HOST_PORT:-8080}:8080"');
+    expect(compose).toContain('"127.0.0.1:${AGENTWORLD_HOST_PORT:-18080}:8080"');
     expect(compose).toContain("read_only: true");
     expect(compose).toContain("no-new-privileges:true");
     expect(compose).toContain("cap_drop:");
@@ -18,17 +18,28 @@ describe("Hostinger VPS deployment artifacts", () => {
       "deploy/hostinger/nginx-agentworld-location.conf",
       "utf8",
     );
+    const subdomain = readFileSync(
+      "deploy/hostinger/nginx-agentworld-subdomain.conf",
+      "utf8",
+    );
+    const bootstrap = readFileSync("deploy/hostinger/bootstrap.sh", "utf8");
     const script = readFileSync("deploy/hostinger/update.sh", "utf8");
     const readme = readFileSync("README", "utf8");
     const docs = readFileSync("docs/hostinger-vps-deployment.md", "utf8");
 
     expect(location).toContain("location ^~ /agentworld/");
-    expect(location).toContain("proxy_pass http://127.0.0.1:8080;");
+    expect(location).toContain("proxy_pass http://127.0.0.1:18080;");
+    expect(subdomain).toContain("server_name agentworld.sarathchandra.com;");
+    expect(subdomain).toContain("proxy_pass http://127.0.0.1:18080;");
+    expect(bootstrap).toContain("NGINX_SITE_NAME");
+    expect(bootstrap).toContain("certbot --nginx");
     expect(script).toContain("git pull --ff-only origin");
     expect(script).toContain("up -d --build --remove-orphans");
     expect(script).toContain("AGENTWORLD_HEALTH_PATH");
+    expect(script).toContain("AGENTWORLD_HOST_PORT:-18080");
     expect(readme).toContain("Hostinger VPS Recommended Path");
     expect(readme).toContain("agentworld.sarathchandra.com");
+    expect(readme).toContain("GitHub Actions First Deploy");
     expect(readme).toContain("Updating Production");
     expect(readme).toContain("Maintenance");
     expect(readme).toContain("Rollback");

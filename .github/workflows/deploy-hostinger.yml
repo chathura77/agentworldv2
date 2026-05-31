@@ -1,0 +1,99 @@
+name: Deploy Hostinger VPS
+
+on:
+  workflow_dispatch:
+    inputs:
+      deploy_ref:
+        description: Branch, tag, or commit SHA to deploy
+        required: true
+        default: master
+        type: string
+      bootstrap:
+        description: Run first-time VPS bootstrap before deployment
+        required: true
+        default: false
+        type: boolean
+  workflow_run:
+    workflows:
+      - CI
+    branches:
+      - master
+    types:
+      - completed
+
+permissions:
+  contents: read
+
+concurrency:
+  group: agentworld-production
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    name: Deploy AgentWorld
+    if: github.event_name == 'workflow_dispatch' || (github.event.workflow_run.conclusion == 'success' && vars.AGENTWORLD_AUTO_DEPLOY == '1')
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    environment:
+      name: production
+      url: https://agentworld.sarathchandra.com/
+
+    env:
+      DEPLOY_HOST: ${{ secrets.HOSTINGER_HOST }}
+      DEPLOY_USER: ${{ secrets.HOSTINGER_USER }}
+      DEPLOY_SSH_KEY: ${{ secrets.HOSTINGER_SSH_PRIVATE_KEY }}
+      DEPLOY_KNOWN_HOSTS: ${{ secrets.HOSTINGER_KNOWN_HOSTS }}
+      DEPLOY_PORT: ${{ vars.HOSTINGER_SSH_PORT || '22' }}
+      APP_DIR: ${{ vars.AGENTWORLD_APP_DIR || '/opt/agentworld' }}
+      BRANCH: master
+      DEPLOY_REF: ${{ github.event_name == 'workflow_dispatch' && inputs.deploy_ref || github.event.workflow_run.head_sha }}
+      REPO_URL: https://github.com/chathura77/agentworldv2.git
+      AGENTWORLD_DOMAIN: ${{ vars.AGENTWORLD_DOMAIN || 'agentworld.sarathchandra.com' }}
+      AGENTWORLD_BASE: ${{ vars.AGENTWORLD_BASE || '/' }}
+      AGENTWORLD_HEALTH_PATH: ${{ vars.AGENTWORLD_HEALTH_PATH || '/' }}
+      AGENTWORLD_HOST_PORT: ${{ vars.AGENTWORLD_HOST_PORT || '18080' }}
+      AGENTWORLD_IMAGE_TAG: ${{ vars.AGENTWORLD_IMAGE_TAG || 'hostinger' }}
+      AGENTWORLD_ENABLE_CERTBOT: ${{ vars.AGENTWORLD_ENABLE_CERTBOT || '0' }}
+      AGENTWORLD_LETSENCRYPT_EMAIL: ${{ secrets.AGENTWORLD_LETSENCRYPT_EMAIL }}
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Validate deployment secrets
+        run: |
+          test -n "$DEPLOY_HOST" || { echo "Missing HOSTINGER_HOST secret"; exit 1; }
+          test -n "$DEPLOY_USER" || { echo "Missing HOSTINGER_USER secret"; exit 1; }
+          test -n "$DEPLOY_SSH_KEY" || { echo "Missing HOSTINGER_SSH_PRIVATE_KEY secret"; exit 1; }
+
+      - name: Configure SSH
+        run: |
+          mkdir -p ~/.ssh
+          chmod 700 ~/.ssh
+          printf '%s\n' "$DEPLOY_SSH_KEY" > ~/.ssh/agentworld_deploy_key
+          chmod 600 ~/.ssh/agentworld_deploy_key
+
+          if [ -n "$DEPLOY_KNOWN_HOSTS" ]; then
+            printf '%s\n' "$DEPLOY_KNOWN_HOSTS" > ~/.ssh/known_hosts
+          else
+            ssh-keyscan -p "$DEPLOY_PORT" -H "$DEPLOY_HOST" >> ~/.ssh/known_hosts
+          fi
+
+      - name: Bootstrap VPS
+        if: ${{ github.event_name == 'workflow_dispatch' && inputs.bootstrap == true }}
+        run: |
+          ssh -i ~/.ssh/agentworld_deploy_key -p "$DEPLOY_PORT" "$DEPLOY_USER@$DEPLOY_HOST" \
+            "APP_DIR='$APP_DIR' REPO_URL='$REPO_URL' BRANCH='$BRANCH' DEPLOY_REF='$DEPLOY_REF' AGENTWORLD_DOMAIN='$AGENTWORLD_DOMAIN' AGENTWORLD_BASE='$AGENTWORLD_BASE' AGENTWORLD_HEALTH_PATH='$AGENTWORLD_HEALTH_PATH' AGENTWORLD_HOST_PORT='$AGENTWORLD_HOST_PORT' AGENTWORLD_IMAGE_TAG='$AGENTWORLD_IMAGE_TAG' AGENTWORLD_ENABLE_CERTBOT='$AGENTWORLD_ENABLE_CERTBOT' AGENTWORLD_LETSENCRYPT_EMAIL='$AGENTWORLD_LETSENCRYPT_EMAIL' bash -s" \
+            < deploy/hostinger/bootstrap.sh
+
+      - name: Update VPS
+        if: ${{ github.event_name == 'workflow_run' || inputs.bootstrap != true }}
+        run: |
+          ssh -i ~/.ssh/agentworld_deploy_key -p "$DEPLOY_PORT" "$DEPLOY_USER@$DEPLOY_HOST" \
+            "APP_DIR='$APP_DIR' BRANCH='$BRANCH' DEPLOY_REF='$DEPLOY_REF' '$APP_DIR/deploy/hostinger/update.sh'"
+
+      - name: Smoke test public deployment
+        run: |
+          curl --fail --show-error --retry 12 --retry-delay 5 "https://$AGENTWORLD_DOMAIN/"
+          curl --fail --show-error --retry 12 --retry-delay 5 "https://$AGENTWORLD_DOMAIN/llms.txt"
+          curl --fail --show-error --retry 12 --retry-delay 5 "https://$AGENTWORLD_DOMAIN/ai-index.json"

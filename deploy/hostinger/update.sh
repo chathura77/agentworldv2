@@ -3,6 +3,7 @@ set -Eeuo pipefail
 
 APP_DIR="${APP_DIR:-/opt/agentworld}"
 BRANCH="${BRANCH:-master}"
+DEPLOY_REF="${DEPLOY_REF:-}"
 ENV_FILE="${ENV_FILE:-$APP_DIR/deploy/hostinger/.env}"
 COMPOSE_FILE="${COMPOSE_FILE:-$APP_DIR/deploy/hostinger/compose.yaml}"
 
@@ -35,10 +36,15 @@ case "$HEALTH_PATH" in
   /*) ;;
   *) HEALTH_PATH="/$HEALTH_PATH" ;;
 esac
-HEALTH_URL="${HEALTH_URL:-http://127.0.0.1:${AGENTWORLD_HOST_PORT:-8080}${HEALTH_PATH}}"
+HEALTH_URL="${HEALTH_URL:-http://127.0.0.1:${AGENTWORLD_HOST_PORT:-18080}${HEALTH_PATH}}"
 
-git fetch origin "$BRANCH"
-git pull --ff-only origin "$BRANCH"
+git fetch --tags origin "$BRANCH"
+if [ -n "$DEPLOY_REF" ] && [ "$DEPLOY_REF" != "$BRANCH" ]; then
+  git checkout --detach "$DEPLOY_REF"
+else
+  git checkout "$BRANCH"
+  git pull --ff-only origin "$BRANCH"
+fi
 
 "${COMPOSE[@]}" --env-file "$ENV_FILE" -f "$COMPOSE_FILE" up -d --build --remove-orphans
 
