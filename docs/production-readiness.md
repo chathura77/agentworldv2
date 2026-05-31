@@ -66,6 +66,20 @@ audit, before copying only static assets and `nginx.conf` into the final image.
 The Nginx config supports both root deployment and `/agentworld/` path
 deployment for the planned `sarathchandra.com` integration.
 
+## SEO and AI Retrieval Checks
+
+- Confirm `https://www.sarathchandra.com/agentworld/` returns the AgentWorld
+  canonical page with the expected title, description, Open Graph tags, and
+  Schema.org JSON-LD.
+- Confirm `https://www.sarathchandra.com/agentworld/sitemap.xml`,
+  `https://www.sarathchandra.com/agentworld/llms.txt`,
+  `https://www.sarathchandra.com/agentworld/agentworld.md`, and
+  `https://www.sarathchandra.com/agentworld/ai-index.json` return `200`.
+- If the app is mounted under the existing Ghost site rather than owning the
+  domain root, add the AgentWorld sitemap URL to the root `sarathchandra.com`
+  robots file or to the main site sitemap index.
+- Submit or inspect the canonical URL in Google Search Console after deployment.
+
 ## Public VM Checklist
 
 - Publish port `80` or `443` through a reverse proxy/load balancer to container

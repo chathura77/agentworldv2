@@ -928,7 +928,7 @@ button:hover {
 .rosterButton {
   display: grid;
   gap: 0.25rem 0.6rem;
-  grid-template-columns: minmax(0, 1.15fr) auto auto auto;
+  grid-template-columns: minmax(0, 1.3fr) auto auto;
   justify-items: start;
   min-height: 0;
   padding: 0.6rem 0.7rem;
@@ -936,11 +936,22 @@ button:hover {
   width: 100%;
 }
 
+.rosterIdentity {
+  display: grid;
+  gap: 0.12rem;
+}
+
+.rosterMeta {
+  color: #64748b;
+  font-size: 0.72rem;
+  font-weight: 700;
+}
+
 .rosterButton span {
   overflow-wrap: anywhere;
 }
 
-.rosterButton span:first-child {
+.rosterIdentity > span:first-child {
   font-weight: 800;
 }
 
@@ -1032,6 +1043,10 @@ button:hover {
 
   .rosterButton {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .rosterIdentity {
+    grid-column: 1 / -1;
   }
 
   .plantWatchGrid {

@@ -1,0 +1,79 @@
+{
+  "name": "AgentWorld",
+  "alternateName": "Agents in a Grid World",
+  "canonicalUrl": "https://www.sarathchandra.com/agentworld/",
+  "author": {
+    "name": "Chathura Sarathchandra",
+    "url": "https://www.sarathchandra.com/"
+  },
+  "siteSection": {
+    "name": "The Sandbox",
+    "url": "https://www.sarathchandra.com/the-sandbox/"
+  },
+  "description": "AgentWorld is a browser-based AI and agentic AI simulation where simple and intelligent creatures move through a grid world, consume plants, manage energy, remember observations, communicate, cooperate, form partnerships and groups, and can be visualized in classic 2D or advanced 3D modes.",
+  "keywords": [
+    "AI agents",
+    "agentic AI",
+    "generative AI simulation",
+    "multi-agent systems",
+    "grid world",
+    "artificial intelligence",
+    "autonomous agents",
+    "agent simulation",
+    "WebGL",
+    "React",
+    "TypeScript"
+  ],
+  "modes": [
+    {
+      "name": "Classic Mode",
+      "purpose": "Preserves the original Java university assignment behavior as closely as practical.",
+      "features": [
+        "grid world",
+        "random plant spawning",
+        "green, red, yellow, and magenta plants",
+        "energy drain",
+        "movement cost",
+        "hunger behavior",
+        "plant inventory",
+        "plant combination bonuses",
+        "simple creatures",
+        "intelligent creatures",
+        "observation",
+        "memory",
+        "communication",
+        "pair partnerships"
+      ]
+    },
+    {
+      "name": "Advanced Mode",
+      "purpose": "Adds richer AI, group behavior, environmental dynamics, and a 3D visualization layer.",
+      "features": [
+        "Three.js 3D environment",
+        "terrain and fertility overlays",
+        "seasonal dynamics",
+        "strategy weights",
+        "memory decay",
+        "bounded groups",
+        "leader-managed groups",
+        "relationship visualization",
+        "debug overlays"
+      ]
+    }
+  ],
+  "machineReadableResources": {
+    "llmsTxt": "https://www.sarathchandra.com/agentworld/llms.txt",
+    "markdownBrief": "https://www.sarathchandra.com/agentworld/agentworld.md",
+    "sitemap": "https://www.sarathchandra.com/agentworld/sitemap.xml",
+    "sourceRepository": "https://github.com/chathura77/agentworldv2"
+  },
+  "preferredCitation": "AgentWorld by Chathura Sarathchandra, a browser-based AI agents in a grid world simulation.",
+  "runtimeNotes": {
+    "runsInBrowser": true,
+    "requiresBackend": false,
+    "requiresLogin": false,
+    "usesWebGLInAdvancedMode": true,
+    "deterministicSeededSimulation": true
+  },
+  "lastUpdated": "2026-05-31"
+}

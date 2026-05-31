@@ -32,7 +32,10 @@ describe("SelectedCreaturePanel", () => {
     creature.previousPosition = { x: 1, y: 3 };
     const target = world.addPlant("red", { x: 3, y: 3 });
     const cellPlant = world.addPlant("yellow", { x: 2, y: 3 });
-    const linked = world.addCreature("intel", { position: { x: 4, y: 3 }, energy: 99 }) as IntelCreature;
+    const linked = world.addCreature("intel", {
+      position: { x: 4, y: 3 },
+      energy: 99,
+    }) as IntelCreature;
     creature.partnerId = linked.id;
     creature.groupMemberIds = [linked.id];
     creature.groupId = `group-${creature.id}-${linked.id}`;
@@ -127,7 +130,9 @@ describe("SelectedCreaturePanel", () => {
     expect(markup).toContain(
       "2, 3 | current, plants, occupied | plants 1 | creatures 1 | fertility 1.00",
     );
-    expect(markup).toContain("3, 3 | ahead, plants | plants 1 | creatures 0 | fertility 1.00");
+    expect(markup).toContain(
+      "3, 3 | ahead, plants | plants 1 | creatures 0 | fertility 1.00",
+    );
     expect(markup).toContain(`Pursuit target: ${target.id} red @ 3, 3`);
     expect(markup).toContain("Desired combo: green-red");
     expect(markup).toContain(`Group: group-${creature.id}-${linked.id}`);
@@ -158,10 +163,16 @@ describe("SelectedCreaturePanel", () => {
     expect(markup).toContain("Magenta here");
     expect(markup).toContain("Clear plants");
     expect(markup).toContain("Creature roster");
-    expect(markup).toContain(`${linked.id}</span><span>intel</span><span>4, 3</span><span>99e`);
-    expect(markup).toContain("<button type=\"button\">Pin</button>");
-    expect(markup).toContain("<button type=\"button\">Select</button>");
-    expect(markup).toContain("<button type=\"button\">Remove</button>");
+    expect(markup).toContain(
+      `${linked.id}</span><span class="rosterMeta">intel | observing | partner`,
+    );
+    expect(markup).toContain(
+      `${creature.id}</span><span class="rosterMeta">intel | observing | leader`,
+    );
+    expect(markup).toContain(">4, 3</span><span>99e</span>");
+    expect(markup).toContain('<button type="button">Pin</button>');
+    expect(markup).toContain('<button type="button">Select</button>');
+    expect(markup).toContain('<button type="button">Remove</button>');
     expect(markup).toContain("red @ 3, 3 | seen 5 ticks ago | conf 0.75");
     expect(markup).toContain("simple @ 4, 3 | seen 3 ticks ago | conf 0.50");
   });
@@ -204,6 +215,9 @@ describe("SelectedCreaturePanel", () => {
     expect(markup).toContain("Clear plants");
     expect(markup).toContain("Red here");
     expect(markup).toContain("Creature roster");
-    expect(markup).toContain(`${simple.id}</span><span>simple</span><span>1, 2</span><span>88e`);
+    expect(markup).toContain(
+      `${simple.id}</span><span class="rosterMeta">simple | wandering | solo`,
+    );
+    expect(markup).toContain(">1, 2</span><span>88e</span>");
   });
 });

@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630" role="img" aria-labelledby="title desc">
+  <title id="title">AgentWorld social preview</title>
+  <desc id="desc">AgentWorld: AI agents in a grid world simulation by Chathura Sarathchandra.</desc>
+  <rect width="1200" height="630" fill="#392422" />
+  <g opacity=".16" stroke="#f8f3ef" stroke-width="2">
+    <path d="M90 90h1020v450H90z" fill="none" />
+    <path d="M90 180h1020M90 270h1020M90 360h1020M90 450h1020" />
+    <path d="M260 90v450M430 90v450M600 90v450M770 90v450M940 90v450" />
+  </g>
+  <circle cx="305" cy="250" r="44" fill="#3fbf76" />
+  <circle cx="880" cy="395" r="44" fill="#d94868" />
+  <circle cx="725" cy="210" r="34" fill="#d7c1ff" />
+  <path d="M510 420l76-260 94 150-170 110z" fill="#f1c84b" />
+  <text x="90" y="115" fill="#dfcfc8" font-family="Manrope, Segoe UI, sans-serif" font-size="30" font-weight="800" letter-spacing="4">SARATHCHANDRA.COM / THE SANDBOX</text>
+  <text x="90" y="315" fill="#ffffff" font-family="Manrope, Segoe UI, sans-serif" font-size="96" font-weight="900">AgentWorld</text>
+  <text x="96" y="380" fill="#f8f3ef" font-family="Manrope, Segoe UI, sans-serif" font-size="38" font-weight="700">AI agents in a grid world simulation</text>
+  <text x="96" y="450" fill="#dfcfc8" font-family="Manrope, Segoe UI, sans-serif" font-size="28" font-weight="600">Memory • Communication • Cooperation • 3D Dynamics</text>
+</svg>

@@ -82,6 +82,7 @@ export function SelectedCreaturePanel({
         />
         <CreatureRoster
           creatures={aliveCreatures}
+          onSelectCell={onSelectCell}
           onSelectCreature={onSelectCreature}
           selectedCreatureId={null}
         />
@@ -97,10 +98,14 @@ export function SelectedCreaturePanel({
     creature.kind === "intel"
       ? world.config.intel.maxInventory
       : world.config.simple.maxInventory;
-  const inventoryEnergy = creature.inventory.reduce((sum, plant) => sum + plant.energy, 0);
+  const inventoryEnergy = creature.inventory.reduce(
+    (sum, plant) => sum + plant.energy,
+    0,
+  );
   const currentCellPlants = world.plants.filter(
     (plant) =>
-      plant.position.x === creature.position.x && plant.position.y === creature.position.y,
+      plant.position.x === creature.position.x &&
+      plant.position.y === creature.position.y,
   );
   const visibleCells = world.grid.ahead(
     creature.position,
@@ -114,12 +119,16 @@ export function SelectedCreaturePanel({
       (plant) => plant.position.x === position.x && plant.position.y === position.y,
     );
     const creatures = world.creatures.filter(
-      (entry) => entry.alive && entry.position.x === position.x && entry.position.y === position.y,
+      (entry) =>
+        entry.alive &&
+        entry.position.x === position.x &&
+        entry.position.y === position.y,
     );
     return {
       creatures,
       fertility: world.getFertility(position),
-      isCurrent: position.x === creature.position.x && position.y === creature.position.y,
+      isCurrent:
+        position.x === creature.position.x && position.y === creature.position.y,
       isFacing: position.x === facingPosition.x && position.y === facingPosition.y,
       plants,
       position,
@@ -187,11 +196,7 @@ export function SelectedCreaturePanel({
           label="Inventory"
           value={`${formatInventorySummary(creature)} (${creature.inventory.length}/${inventoryLimit})`}
         />
-        <Detail
-          icon={<Target size={15} />}
-          label="Hunger"
-          value={hungerState}
-        />
+        <Detail icon={<Target size={15} />} label="Hunger" value={hungerState} />
         <Detail
           icon={<Gauge size={15} />}
           label="Carry energy"
@@ -229,15 +234,17 @@ export function SelectedCreaturePanel({
           Move cost:{" "}
           {creature.kind === "intel"
             ? world.config.intel.movementCost
-            : world.config.simple.movementCost}
-          {" "}|
-          {" "}Stay cost:{" "}
+            : world.config.simple.movementCost}{" "}
+          | Stay cost:{" "}
           {creature.kind === "intel"
             ? world.config.intel.stayCost
             : world.config.simple.stayCost}
         </p>
         <div className="selectionActions detailActions">
-          <button onClick={() => onAdjustCreatureEnergy(creature.id, -25)} type="button">
+          <button
+            onClick={() => onAdjustCreatureEnergy(creature.id, -25)}
+            type="button"
+          >
             Drain 25
           </button>
           <button onClick={() => onAdjustCreatureEnergy(creature.id, 25)} type="button">
@@ -278,7 +285,9 @@ export function SelectedCreaturePanel({
         <h3>Target analysis</h3>
         <p>Target status: {targetStatus}</p>
         <p>Best carried combo: {formatComboSummary(bestInventoryCombo)}</p>
-        <p>Target combo path: {formatComboSummary(desiredPlantCombo, desiredPlant?.type)}</p>
+        <p>
+          Target combo path: {formatComboSummary(desiredPlantCombo, desiredPlant?.type)}
+        </p>
       </section>
 
       <section className="memoryBlock">
@@ -291,15 +300,9 @@ export function SelectedCreaturePanel({
               <li key={formatPosition(cell.position)}>
                 <div className="memoryListRow">
                   <span>
-                    {formatPosition(cell.position)}
-                    {" "}
-                    | {formatVisibleCellFlags(cell)}
-                    {" "}
-                    | plants {cell.plants.length}
-                    {" "}
-                    | creatures {cell.creatures.length}
-                    {" "}
-                    | fertility {cell.fertility.toFixed(2)}
+                    {formatPosition(cell.position)} | {formatVisibleCellFlags(cell)} |
+                    plants {cell.plants.length} | creatures {cell.creatures.length} |
+                    fertility {cell.fertility.toFixed(2)}
                   </span>
                   <span className="memoryActions">
                     <button onClick={() => onSelectCell(cell.position)} type="button">
@@ -369,23 +372,23 @@ export function SelectedCreaturePanel({
             <p>Requested plant: {intel.requestedPlantId ?? "none"}</p>
             <p>Group: {intel.groupId ?? "none"}</p>
             <p>
-              Group size: {groupMembers.length + 1} / {world.config.advanced.groupSizeLimit}
+              Group size: {groupMembers.length + 1} /{" "}
+              {world.config.advanced.groupSizeLimit}
             </p>
             <p>Group members: {formatGroupMembers(groupMembers)}</p>
             <p>
-              Plant memory: {intel.plantMemory.length} / {world.config.intel.plantMemory}
+              Plant memory: {intel.plantMemory.length} /{" "}
+              {world.config.intel.plantMemory}
             </p>
             <p>
-              Creature memory: {intel.creatureMemory.length} / {world.config.intel.creatureMemory}
+              Creature memory: {intel.creatureMemory.length} /{" "}
+              {world.config.intel.creatureMemory}
             </p>
             <p>Observation range: {world.config.intel.observationRange}</p>
             <p>Partnership threshold: {world.config.intel.partnershipMinComboEnergy}</p>
             <p>Linked creature: {formatLinkedCreature(linkedCreature)}</p>
             {world.config.mode === "advanced" ? (
-              <p>
-                Strategy:{" "}
-                {formatStrategySummary(world.config.advanced.strategy)}
-              </p>
+              <p>Strategy: {formatStrategySummary(world.config.advanced.strategy)}</p>
             ) : null}
           </section>
           <MemoryList
@@ -411,6 +414,7 @@ export function SelectedCreaturePanel({
 
       <CreatureRoster
         creatures={aliveCreatures}
+        onSelectCell={onSelectCell}
         onSelectCreature={onSelectCreature}
         selectedCreatureId={creature.id}
       />
@@ -471,8 +475,7 @@ function SelectedCellPanel({
         intel ? world.config.intel.observationRange : 0,
       )
       .some(
-        (position) =>
-          position.x === selectedCell.x && position.y === selectedCell.y,
+        (position) => position.x === selectedCell.x && position.y === selectedCell.y,
       );
   const isTargetCell =
     intel !== null &&
@@ -632,42 +635,45 @@ function MemoryList({
         <p>None</p>
       ) : (
         <ul className="memoryList">
-          {entries.slice(-5).reverse().map((entry) => {
-            const liveCreature =
-              "creatureId" in entry ? world.getCreature(entry.creatureId) : null;
+          {entries
+            .slice(-5)
+            .reverse()
+            .map((entry) => {
+              const liveCreature =
+                "creatureId" in entry ? world.getCreature(entry.creatureId) : null;
 
-            return (
-              <li key={"plantId" in entry ? entry.plantId : entry.creatureId}>
-                <div className="memoryListRow">
-                  <span>
-                    {"type" in entry ? entry.type : entry.kind} @
-                    {" "}
-                    {formatPosition(entry.position)}
-                    {" "}
-                    | seen {Math.max(0, tick - entry.lastSeenTick)} ticks ago | conf
-                    {" "}
-                    {entry.confidence.toFixed(2)}
-                  </span>
-                  <span className="memoryActions">
-                    <button onClick={() => onSelectCell(entry.position)} type="button">
-                      Pin
-                    </button>
-                    {"creatureId" in entry && liveCreature ? (
+              return (
+                <li key={"plantId" in entry ? entry.plantId : entry.creatureId}>
+                  <div className="memoryListRow">
+                    <span>
+                      {"type" in entry ? entry.type : entry.kind} @{" "}
+                      {formatPosition(entry.position)} | seen{" "}
+                      {Math.max(0, tick - entry.lastSeenTick)} ticks ago | conf{" "}
+                      {entry.confidence.toFixed(2)}
+                    </span>
+                    <span className="memoryActions">
                       <button
-                        onClick={() => {
-                          onSelectCreature(entry.creatureId);
-                          onSelectCell(liveCreature.position);
-                        }}
+                        onClick={() => onSelectCell(entry.position)}
                         type="button"
                       >
-                        Select
+                        Pin
                       </button>
-                    ) : null}
-                  </span>
-                </div>
-              </li>
-            );
-          })}
+                      {"creatureId" in entry && liveCreature ? (
+                        <button
+                          onClick={() => {
+                            onSelectCreature(entry.creatureId);
+                            onSelectCell(liveCreature.position);
+                          }}
+                          type="button"
+                        >
+                          Select
+                        </button>
+                      ) : null}
+                    </span>
+                  </div>
+                </li>
+              );
+            })}
         </ul>
       )}
     </section>
@@ -769,7 +775,9 @@ function formatCommunicationMessage(message: CommunicationMessage): string {
   return `t${message.tick} ${message.fromCreatureId} -> ${message.toCreatureId} ${message.type}${payload ? ` | ${payload}` : ""}`;
 }
 
-function formatStrategySummary(strategy: World["config"]["advanced"]["strategy"]): string {
+function formatStrategySummary(
+  strategy: World["config"]["advanced"]["strategy"],
+): string {
   return [
     `coop ${strategy.cooperation.toFixed(1)}`,
     `explore ${strategy.exploration.toFixed(1)}`,
@@ -846,10 +854,12 @@ function formatVisibleCellFlags(cell: {
 
 function CreatureRoster({
   creatures,
+  onSelectCell,
   onSelectCreature,
   selectedCreatureId,
 }: {
   creatures: Creature[];
+  onSelectCell: (position: Position | null) => void;
   onSelectCreature: (id: string) => void;
   selectedCreatureId: string | null;
 }) {
@@ -866,12 +876,23 @@ function CreatureRoster({
           {creatures.map((entry) => (
             <li key={entry.id}>
               <button
-                className={entry.id === selectedCreatureId ? "rosterButton active" : "rosterButton"}
-                onClick={() => onSelectCreature(entry.id)}
+                className={
+                  entry.id === selectedCreatureId
+                    ? "rosterButton active"
+                    : "rosterButton"
+                }
+                onClick={() => {
+                  onSelectCell(entry.position);
+                  onSelectCreature(entry.id);
+                }}
                 type="button"
               >
-                <span>{entry.id}</span>
-                <span>{entry.kind}</span>
+                <span className="rosterIdentity">
+                  <span>{entry.id}</span>
+                  <span className="rosterMeta">
+                    {entry.kind} | {entry.mode} | {formatRosterRole(entry)}
+                  </span>
+                </span>
                 <span>{formatPosition(entry.position)}</span>
                 <span>{entry.energy}e</span>
               </button>
@@ -881,4 +902,20 @@ function CreatureRoster({
       )}
     </section>
   );
+}
+
+function formatRosterRole(creature: Creature): string {
+  if (!(creature instanceof IntelCreature)) {
+    return "solo";
+  }
+  if (creature.partnerId) {
+    return "leader";
+  }
+  if (creature.leaderId) {
+    return "partner";
+  }
+  if (creature.groupMemberIds.length > 0) {
+    return "group lead";
+  }
+  return "solo";
 }

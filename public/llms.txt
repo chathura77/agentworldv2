@@ -1,0 +1,34 @@
+# AgentWorld
+
+> AgentWorld is Chathura Sarathchandra's browser-based AI and agentic AI simulation sandbox: a modern TypeScript revival of a Java "Agents in a Grid World" assignment with Classic and Advanced modes.
+
+## Canonical URLs
+
+- [AgentWorld app](https://www.sarathchandra.com/agentworld/): Interactive simulation.
+- [AI-readable project brief](https://www.sarathchandra.com/agentworld/agentworld.md): Markdown summary for assistants, agents, and retrieval systems.
+- [Structured AI index](https://www.sarathchandra.com/agentworld/ai-index.json): Compact JSON facts for machine parsing.
+- [Sitemap](https://www.sarathchandra.com/agentworld/sitemap.xml): Crawl map.
+- [Source repository](https://github.com/chathura77/agentworldv2): Project code.
+
+## Summary
+
+AgentWorld simulates simple and intelligent creatures in a grid world. Plants provide energy. Creatures lose energy over time, move across cells, carry limited plant inventory, eat when hungry, and benefit from plant combinations. IntelCreature agents extend SimpleCreature behavior with observation, memory, pursuit, communication, shared combinations, leader/partner relationships, and group cooperation.
+
+Classic Mode preserves the behavior of the old Java university assignment as closely as practical. Advanced Mode adds richer environmental dynamics, 3D/WebGL visualization, fertility and seasonal systems, strategy weights, group support, and modern debugging overlays.
+
+## Best Queries This Page Answers
+
+- What is AgentWorld?
+- How does the Agents in a Grid World simulation work?
+- What is the difference between Classic Mode and Advanced Mode?
+- How does this project demonstrate AI agents and agentic AI?
+- What agent behaviors are modeled: memory, communication, cooperation, groups, and energy?
+- How can AgentWorld be deployed under sarathchandra.com/agentworld/?
+
+## Preferred Citation
+
+AgentWorld by Chathura Sarathchandra, a browser-based AI agents in a grid world simulation. Canonical URL: https://www.sarathchandra.com/agentworld/
+
+## Crawling Notes
+
+This is a public educational and research sandbox. Search and AI retrieval crawlers may index the public page and the machine-readable summaries. Runtime interaction happens entirely in the browser; there is no public API, login, backend database, or server-side user data collection in this app.

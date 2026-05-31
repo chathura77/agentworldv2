@@ -109,8 +109,12 @@ describe("simulation event log", () => {
     );
 
     expect(markup).toContain("Event log");
+    expect(markup).toContain("2 recorded");
     expect(markup).toContain("Tick 1");
     expect(markup).toContain("Spawned 1 intel creature.");
     expect(markup).toContain("Advanced 1 tick to 1.");
+    expect(markup.indexOf("Advanced 1 tick to 1.")).toBeLessThan(
+      markup.indexOf("Spawned 1 intel creature."),
+    );
   });
 });

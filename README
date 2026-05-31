@@ -85,6 +85,10 @@ The full local production gate is:
 npm run check
 ```
 
+The npm scripts use Vite/Vitest's native config loader, and Vitest runs on the
+thread pool so the standard commands stay compatible with sandboxed Windows
+environments where child-process spawning is restricted.
+
 ## Production Deployment
 
 Build and serve only the static `dist/` output on public infrastructure. Do not
@@ -114,6 +118,25 @@ can be tested locally while still supporting the planned site path.
 
 See `docs/production-readiness.md` and `docs/security-review.md` for the public
 VM/container checklist and security review.
+
+## SEO and AI Indexing
+
+The static shell includes canonical metadata for
+`https://www.sarathchandra.com/agentworld/`, Open Graph/Twitter cards,
+Schema.org JSON-LD, a sitemap, robots rules, and a no-JavaScript fallback summary
+so crawlers can understand the project before the React simulation loads.
+
+Machine-readable resources for AI assistants and retrieval systems are published
+from `public/`:
+
+- `llms.txt`: concise LLM-oriented project summary and preferred citation.
+- `agentworld.md`: fuller Markdown brief for AI agents and answer engines.
+- `ai-index.json`: structured facts about modes, concepts, resources, and runtime
+  behavior.
+
+If this app is mounted under the main Ghost site at `/agentworld/`, make sure the
+root `sarathchandra.com/robots.txt` or main sitemap links to
+`https://www.sarathchandra.com/agentworld/sitemap.xml`.
 
 ## Classic Mode Mapping
 
