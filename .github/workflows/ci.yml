@@ -1,0 +1,86 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    branches:
+      - master
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: agentworld-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  app-check:
+    name: App check
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run tests, lint, typecheck, build, and audit
+        run: npm run check
+
+  docker-smoke:
+    name: Docker smoke test
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    needs: app-check
+
+    env:
+      AGENTWORLD_BASE: /agentworld/
+      IMAGE_NAME: agentworld:ci
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Validate Hostinger Compose config
+        run: docker compose --env-file deploy/hostinger/.env.example -f deploy/hostinger/compose.yaml config
+
+      - name: Build production image for path deployment
+        run: docker build --build-arg AGENTWORLD_BASE="$AGENTWORLD_BASE" -t "$IMAGE_NAME" .
+
+      - name: Smoke test production container
+        run: |
+          docker run --detach --name agentworld-ci --publish 8080:8080 "$IMAGE_NAME"
+
+          for attempt in {1..30}; do
+            if wget -q -O /tmp/agentworld.html http://127.0.0.1:8080/agentworld/; then
+              break
+            fi
+            sleep 2
+          done
+
+          test -s /tmp/agentworld.html
+          wget -q -O /tmp/llms.txt http://127.0.0.1:8080/agentworld/llms.txt
+          wget -q -O /tmp/ai-index.json http://127.0.0.1:8080/agentworld/ai-index.json
+
+          grep -q "AgentWorld: AI Agents" /tmp/agentworld.html
+          grep -q "# AgentWorld" /tmp/llms.txt
+          grep -q '"canonicalUrl"' /tmp/ai-index.json
+
+      - name: Show container logs
+        if: always()
+        run: docker logs agentworld-ci || true
+
+      - name: Stop production container
+        if: always()
+        run: docker stop agentworld-ci || true

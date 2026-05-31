@@ -89,6 +89,18 @@ The npm scripts use Vite/Vitest's native config loader, and Vitest runs on the
 thread pool so the standard commands stay compatible with sandboxed Windows
 environments where child-process spawning is restricted.
 
+## GitHub Actions CI
+
+GitHub Actions runs on pushes and pull requests to `master`. The workflow uses
+Node.js 24, installs dependencies with `npm ci`, runs the same local production
+gate via `npm run check`, validates the Hostinger Docker Compose config, builds
+the production Docker image with `AGENTWORLD_BASE=/agentworld/`, and smoke-tests
+the mounted app plus `llms.txt` and `ai-index.json`.
+
+Deployment to the VPS is still controlled by the Hostinger update script below.
+That keeps production changes explicit until a later deploy workflow is wired to
+GitHub environment secrets.
+
 ## Production Deployment
 
 Build and serve only the static `dist/` output on public infrastructure. Do not

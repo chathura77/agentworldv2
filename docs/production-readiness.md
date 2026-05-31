@@ -23,9 +23,14 @@ The combined local gate is:
 npm run check
 ```
 
+GitHub Actions CI runs the same gate for pushes and pull requests to `master`,
+then validates the Hostinger Compose file and smoke-tests a Docker image built
+for `/agentworld/`. Treat a green workflow as the precondition for pulling the
+latest commit onto the VPS.
+
 Current verified gate for this update:
 
-- `npm test`: 47 tests passed.
+- `npm test`: 59 tests passed.
 - `npm run lint`: passed.
 - `npm run typecheck`: passed.
 - `npm audit --audit-level=moderate`: zero vulnerabilities after upgrading

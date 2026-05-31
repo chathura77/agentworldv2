@@ -148,6 +148,19 @@ ln -sf /opt/agentworld/deploy/hostinger/update.sh /usr/local/bin/update-agentwor
 update-agentworld
 ```
 
+## GitHub Actions Boundary
+
+GitHub Actions validates every push and pull request to `master` before you pull
+updates onto the VPS. The CI workflow runs `npm run check`, validates the
+Hostinger Compose file, builds the production Docker image with
+`AGENTWORLD_BASE=/agentworld/`, and smoke-tests the mounted app plus AI indexing
+resources.
+
+The workflow intentionally does not SSH into the VPS yet. Production updates
+remain an explicit `update-agentworld` or `deploy/hostinger/update.sh` action on
+the server until deploy secrets, a protected GitHub environment, and rollback
+policy are configured.
+
 ## Optional Scheduled Updates
 
 Manual updates are safer, but if you want automated nightly fast-forward
