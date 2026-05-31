@@ -22,10 +22,15 @@ import type { PlantType, Position } from "../sim/entities/types";
 import type { CommunicationMessage } from "../sim/communication/messages";
 
 interface SelectedCreaturePanelProps {
+  onAdjustCreatureEnergy: (id: string, delta: number) => void;
   creature: Creature | null;
   onAddIntelAtCell: (position: Position) => void;
   onAddPlantAtCell: (type: PlantType, position: Position) => void;
   onAddSimpleAtCell: (position: Position) => void;
+  onClearCellCreatures: (position: Position) => void;
+  onClearCellPlants: (position: Position) => void;
+  onRemoveCreature: (id: string) => void;
+  onRemovePlant: (id: string) => void;
   onSelectCell: (position: Position | null) => void;
   onSelectCreature: (id: string | null) => void;
   selectedCell: Position | null;
@@ -34,10 +39,15 @@ interface SelectedCreaturePanelProps {
 }
 
 export function SelectedCreaturePanel({
+  onAdjustCreatureEnergy,
   creature,
   onAddIntelAtCell,
   onAddPlantAtCell,
   onAddSimpleAtCell,
+  onClearCellCreatures,
+  onClearCellPlants,
+  onRemoveCreature,
+  onRemovePlant,
   onSelectCell,
   onSelectCreature,
   selectedCell,
@@ -60,7 +70,11 @@ export function SelectedCreaturePanel({
           onAddIntelAtCell={onAddIntelAtCell}
           onAddPlantAtCell={onAddPlantAtCell}
           onAddSimpleAtCell={onAddSimpleAtCell}
+          onClearCellCreatures={onClearCellCreatures}
+          onClearCellPlants={onClearCellPlants}
           creature={null}
+          onRemoveCreature={onRemoveCreature}
+          onRemovePlant={onRemovePlant}
           onSelectCell={onSelectCell}
           onSelectCreature={onSelectCreature}
           selectedCell={selectedCell}
@@ -223,6 +237,15 @@ export function SelectedCreaturePanel({
             : world.config.simple.stayCost}
         </p>
         <div className="selectionActions detailActions">
+          <button onClick={() => onAdjustCreatureEnergy(creature.id, -25)} type="button">
+            Drain 25
+          </button>
+          <button onClick={() => onAdjustCreatureEnergy(creature.id, 25)} type="button">
+            Boost 25
+          </button>
+          <button onClick={() => onRemoveCreature(creature.id)} type="button">
+            Remove creature
+          </button>
           <button onClick={() => onSelectCell(creature.position)} type="button">
             Pin current
           </button>
@@ -321,7 +344,11 @@ export function SelectedCreaturePanel({
         onAddIntelAtCell={onAddIntelAtCell}
         onAddPlantAtCell={onAddPlantAtCell}
         onAddSimpleAtCell={onAddSimpleAtCell}
+        onClearCellCreatures={onClearCellCreatures}
+        onClearCellPlants={onClearCellPlants}
         creature={creature}
+        onRemoveCreature={onRemoveCreature}
+        onRemovePlant={onRemovePlant}
         onSelectCell={onSelectCell}
         onSelectCreature={onSelectCreature}
         selectedCell={selectedCell}
@@ -396,6 +423,10 @@ function SelectedCellPanel({
   onAddIntelAtCell,
   onAddPlantAtCell,
   onAddSimpleAtCell,
+  onClearCellCreatures,
+  onClearCellPlants,
+  onRemoveCreature,
+  onRemovePlant,
   onSelectCell,
   onSelectCreature,
   selectedCell,
@@ -405,6 +436,10 @@ function SelectedCellPanel({
   onAddIntelAtCell: (position: Position) => void;
   onAddPlantAtCell: (type: PlantType, position: Position) => void;
   onAddSimpleAtCell: (position: Position) => void;
+  onClearCellCreatures: (position: Position) => void;
+  onClearCellPlants: (position: Position) => void;
+  onRemoveCreature: (id: string) => void;
+  onRemovePlant: (id: string) => void;
   onSelectCell: (position: Position | null) => void;
   onSelectCreature: (id: string | null) => void;
   selectedCell: Position | null;
@@ -492,6 +527,9 @@ function SelectedCellPanel({
         <button onClick={() => onAddIntelAtCell(selectedCell)} type="button">
           Add intel here
         </button>
+        <button onClick={() => onClearCellCreatures(selectedCell)} type="button">
+          Clear creatures
+        </button>
       </div>
       <div className="selectionActions">
         <button onClick={() => onAddPlantAtCell("green", selectedCell)} type="button">
@@ -506,15 +544,44 @@ function SelectedCellPanel({
         <button onClick={() => onAddPlantAtCell("magenta", selectedCell)} type="button">
           Magenta here
         </button>
+        <button onClick={() => onClearCellPlants(selectedCell)} type="button">
+          Clear plants
+        </button>
       </div>
-      {creatures.length > 0 ? (
-        <div className="selectionActions">
-          {creatures.map((entry) => (
-            <button key={entry.id} onClick={() => onSelectCreature(entry.id)} type="button">
-              Select {entry.id}
-            </button>
+      {plants.length > 0 ? (
+        <ul className="memoryList">
+          {plants.map((plant) => (
+            <li key={plant.id}>
+              <div className="memoryListRow">
+                <span>{`${plant.id}:${plant.type}:${plant.energy}`}</span>
+                <span className="memoryActions">
+                  <button onClick={() => onRemovePlant(plant.id)} type="button">
+                    Remove
+                  </button>
+                </span>
+              </div>
+            </li>
           ))}
-        </div>
+        </ul>
+      ) : null}
+      {creatures.length > 0 ? (
+        <ul className="memoryList">
+          {creatures.map((entry) => (
+            <li key={entry.id}>
+              <div className="memoryListRow">
+                <span>{`${entry.id}:${entry.kind}:${entry.energy}`}</span>
+                <span className="memoryActions">
+                  <button onClick={() => onSelectCreature(entry.id)} type="button">
+                    Select
+                  </button>
+                  <button onClick={() => onRemoveCreature(entry.id)} type="button">
+                    Remove
+                  </button>
+                </span>
+              </div>
+            </li>
+          ))}
+        </ul>
       ) : null}
     </section>
   );

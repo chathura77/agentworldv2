@@ -343,6 +343,54 @@ export function useSimulationController() {
     });
   }
 
+  function removePlant(id: string) {
+    mutate("edit-world", (currentWorld) => {
+      currentWorld.removePlant(id);
+    });
+  }
+
+  function clearCellPlants(position: Position) {
+    mutate("edit-world", (currentWorld) => {
+      currentWorld.removePlantsAt(position);
+      setSelectedCell(position);
+    });
+  }
+
+  function removeCreature(id: string) {
+    mutate("edit-world", (currentWorld) => {
+      const removed = currentWorld.removeCreature(id);
+      if (removed && selectedCell && selectedCell.x === removed.position.x && selectedCell.y === removed.position.y) {
+        setSelectedCell(removed.position);
+      }
+      if (selectedCreatureId === id) {
+        setSelectedCreatureId(null);
+      }
+    });
+  }
+
+  function clearCellCreatures(position: Position) {
+    mutate("edit-world", (currentWorld) => {
+      const removed = currentWorld.removeCreaturesAt(position);
+      if (removed.some((creature) => creature.id === selectedCreatureId)) {
+        setSelectedCreatureId(null);
+      }
+      setSelectedCell(position);
+    });
+  }
+
+  function adjustCreatureEnergy(id: string, delta: number) {
+    mutate("edit-world", (currentWorld) => {
+      const creature = currentWorld.getCreature(id);
+      if (!creature) {
+        return;
+      }
+      currentWorld.setCreatureEnergy(id, creature.energy + delta);
+      if (!currentWorld.getCreature(id)?.alive && selectedCreatureId === id) {
+        setSelectedCreatureId(null);
+      }
+    });
+  }
+
   function clearWorld() {
     mutate("clear-world", (currentWorld) => {
       currentWorld.clearWorld();
@@ -408,11 +456,16 @@ export function useSimulationController() {
       addCreature,
       addPlantAtCell,
       addPlants,
+      adjustCreatureEnergy,
       clearPlants,
+      clearCellCreatures,
+      clearCellPlants,
       clearWorld,
       captureSnapshot,
       clearEventLog,
       loadSnapshot,
+      removeCreature,
+      removePlant,
       reset,
       selectCell: setSelectedCell,
       selectCreature,

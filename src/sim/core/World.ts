@@ -200,6 +200,15 @@ export class World {
     this.plants = [];
   }
 
+  removePlantsAt(position: Position): Plant[] {
+    const removed = this.plants.filter((plant) => samePosition(plant.position, position));
+    if (removed.length === 0) {
+      return [];
+    }
+    this.plants = this.plants.filter((plant) => !samePosition(plant.position, position));
+    return removed;
+  }
+
   addCreature(kind: CreatureKind, options: AddCreatureOptions = {}): Creature {
     const position = this.grid.clamp(
       options.position ?? {
@@ -295,6 +304,40 @@ export class World {
       return null;
     }
     return this.creatures.find((creature) => creature.id === id) ?? null;
+  }
+
+  removeCreature(id: string): Creature | null {
+    const index = this.creatures.findIndex((creature) => creature.id === id);
+    if (index === -1) {
+      return null;
+    }
+    const [removed] = this.creatures.splice(index, 1);
+    this.cleanupRelationships();
+    return removed;
+  }
+
+  removeCreaturesAt(position: Position): Creature[] {
+    const ids = this.creatures
+      .filter((creature) => samePosition(creature.position, position))
+      .map((creature) => creature.id);
+
+    return ids
+      .map((id) => this.removeCreature(id))
+      .filter((creature): creature is Creature => creature !== null);
+  }
+
+  setCreatureEnergy(id: string, energy: number): Creature | null {
+    const creature = this.getCreature(id);
+    if (!creature) {
+      return null;
+    }
+    creature.energy = Math.max(0, Math.round(energy));
+    if (creature.energy === 0 && creature.alive) {
+      creature.kill();
+      this.deadCreatures += 1;
+      this.cleanupRelationships();
+    }
+    return creature;
   }
 
   step(deltaTicks = 1): void {

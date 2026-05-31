@@ -76,10 +76,15 @@ export function App() {
       <aside className="sidePanel">
         <StatsPanel mode={world.config.mode} stats={stats} />
         <SelectedCreaturePanel
+          onAdjustCreatureEnergy={actions.adjustCreatureEnergy}
           onAddIntelAtCell={(position) => actions.addCreature("intel", position)}
           onAddPlantAtCell={actions.addPlantAtCell}
           onAddSimpleAtCell={(position) => actions.addCreature("simple", position)}
+          onClearCellCreatures={actions.clearCellCreatures}
+          onClearCellPlants={actions.clearCellPlants}
           creature={selectedCreature}
+          onRemoveCreature={actions.removeCreature}
+          onRemovePlant={actions.removePlant}
           onSelectCell={actions.selectCell}
           onSelectCreature={actions.selectCreature}
           selectedCell={selectedCell}

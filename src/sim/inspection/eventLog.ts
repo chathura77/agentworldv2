@@ -14,6 +14,7 @@ export type SimulationAction =
   | "add-simple-creature"
   | "add-intel-creature"
   | "add-plants"
+  | "edit-world"
   | "clear-plants"
   | "clear-world"
   | "load-snapshot"
@@ -106,6 +107,10 @@ export function summarizeWorldEvents(
 
   if (action === "load-snapshot") {
     summaries.unshift(`Loaded snapshot at tick ${after.tick} with ${after.plants.length} plants.`);
+  }
+
+  if (summaries.length === 0 && action === "edit-world") {
+    summaries.push("Edited the current world state from the inspector.");
   }
 
   if (summaries.length === 0 && action === "update-settings") {

@@ -820,6 +820,34 @@ describe("classic simulation core", () => {
     });
   });
 
+  it("removes inspector-edited creatures and clears linked intel relationships", () => {
+    const world = testWorld("inspector-removal");
+    const leader = world.addCreature("intel", {
+      position: { x: 1, y: 1 },
+      facing: "east",
+    }) as IntelCreature;
+    const partner = world.addCreature("intel", {
+      position: { x: 1, y: 1 },
+      facing: "east",
+    }) as IntelCreature;
+    leader.partnerId = partner.id;
+    leader.groupMemberIds = [partner.id];
+    leader.groupId = "group-c1-c2";
+    leader.desiredPlantId = "p99";
+    leader.desiredCombo = "green-red";
+    partner.leaderId = leader.id;
+    partner.groupId = leader.groupId;
+    partner.requestedPlantId = "p99";
+
+    expect(world.removeCreature(partner.id)?.id).toBe(partner.id);
+    expect(world.getCreature(partner.id)).toBeNull();
+    expect(leader.partnerId).toBeNull();
+    expect(leader.groupMemberIds).toEqual([]);
+    expect(leader.groupId).toBeNull();
+    expect(leader.desiredPlantId).toBeNull();
+    expect(leader.desiredCombo).toBeNull();
+  });
+
   it("builds Classic renderer memory overlays from the selected intel creature", () => {
     const world = testWorld("classic-scene-memory");
     const intel = world.addCreature("intel", {

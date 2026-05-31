@@ -78,6 +78,26 @@ describe("simulation event log", () => {
     );
   });
 
+  it("summarizes inspector edits even when counts do not change", () => {
+    const world = new World({
+      seed: "event-log-edit-world",
+      targetPlantPopulation: 0,
+      grid: { width: 5, height: 5 },
+    });
+    const creature = world.addCreature("simple", {
+      position: { x: 1, y: 1 },
+      energy: 100,
+    });
+
+    const before = world.serialize();
+    world.setCreatureEnergy(creature.id, 125);
+    const after = world.serialize();
+
+    expect(summarizeWorldEvents("edit-world", before, after)).toContain(
+      "Edited the current world state from the inspector.",
+    );
+  });
+
   it("renders recent events in the shell panel", () => {
     const events: SimulationEvent[] = [
       { id: "event-1", summary: "Spawned 1 intel creature.", tick: 0 },

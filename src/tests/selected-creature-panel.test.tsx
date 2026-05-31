@@ -1,5 +1,5 @@
 import { renderToStaticMarkup } from "react-dom/server";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { SelectedCreaturePanel } from "../components/SelectedCreaturePanel";
 import { World } from "../sim/core/World";
 import { IntelCreature } from "../sim/entities/IntelCreature";
@@ -88,9 +88,14 @@ describe("SelectedCreaturePanel", () => {
     const markup = renderToStaticMarkup(
       <SelectedCreaturePanel
         creature={creature}
+        onAdjustCreatureEnergy={vi.fn()}
         onAddIntelAtCell={() => undefined}
         onAddPlantAtCell={() => undefined}
         onAddSimpleAtCell={() => undefined}
+        onClearCellCreatures={vi.fn()}
+        onClearCellPlants={vi.fn()}
+        onRemoveCreature={vi.fn()}
+        onRemovePlant={vi.fn()}
         onSelectCell={() => undefined}
         onSelectCreature={() => undefined}
         selectedCell={{ x: 3, y: 3 }}
@@ -106,6 +111,9 @@ describe("SelectedCreaturePanel", () => {
     expect(markup).toContain("Current cell plants: ");
     expect(markup).toContain(`${cellPlant.id}:yellow:${cellPlant.energy}`);
     expect(markup).toContain("Visible cells: 2, 3 -&gt; 3, 3");
+    expect(markup).toContain("Drain 25");
+    expect(markup).toContain("Boost 25");
+    expect(markup).toContain("Remove creature");
     expect(markup).toContain("Pin current");
     expect(markup).toContain("Pin previous");
     expect(markup).toContain("Pin facing");
@@ -145,12 +153,15 @@ describe("SelectedCreaturePanel", () => {
     expect(markup).toContain(`Creatures: none`);
     expect(markup).toContain("Add simple here");
     expect(markup).toContain("Add intel here");
+    expect(markup).toContain("Clear creatures");
     expect(markup).toContain("Green here");
     expect(markup).toContain("Magenta here");
+    expect(markup).toContain("Clear plants");
     expect(markup).toContain("Creature roster");
     expect(markup).toContain(`${linked.id}</span><span>intel</span><span>4, 3</span><span>99e`);
     expect(markup).toContain("<button type=\"button\">Pin</button>");
     expect(markup).toContain("<button type=\"button\">Select</button>");
+    expect(markup).toContain("<button type=\"button\">Remove</button>");
     expect(markup).toContain("red @ 3, 3 | seen 5 ticks ago | conf 0.75");
     expect(markup).toContain("simple @ 4, 3 | seen 3 ticks ago | conf 0.50");
   });
@@ -168,9 +179,14 @@ describe("SelectedCreaturePanel", () => {
     const markup = renderToStaticMarkup(
       <SelectedCreaturePanel
         creature={null}
+        onAdjustCreatureEnergy={vi.fn()}
         onAddIntelAtCell={() => undefined}
         onAddPlantAtCell={() => undefined}
         onAddSimpleAtCell={() => undefined}
+        onClearCellCreatures={vi.fn()}
+        onClearCellPlants={vi.fn()}
+        onRemoveCreature={vi.fn()}
+        onRemovePlant={vi.fn()}
         onSelectCell={() => undefined}
         onSelectCreature={() => undefined}
         selectedCell={{ x: 1, y: 2 }}
@@ -184,6 +200,8 @@ describe("SelectedCreaturePanel", () => {
     expect(markup).toContain("Pinned cell 1, 2");
     expect(markup).toContain("Flags none");
     expect(markup).toContain(`Creatures: ${simple.id}:simple:88`);
+    expect(markup).toContain("Clear creatures");
+    expect(markup).toContain("Clear plants");
     expect(markup).toContain("Red here");
     expect(markup).toContain("Creature roster");
     expect(markup).toContain(`${simple.id}</span><span>simple</span><span>1, 2</span><span>88e`);

@@ -50,7 +50,9 @@ shows current group IDs, group membership, and partnership thresholds for
 tuning/debugging, plus target-actionability summaries and visible-cell
 inspection rows for quicker Classic pursuit debugging. Pinned cells now act as
 scenario staging points, with direct controls to spawn simple/intel creatures
-or exact plant colors into the inspected square for deterministic reproduction.
+or exact plant colors into the inspected square for deterministic reproduction,
+plus per-cell clear/remove actions and selected-creature energy nudges/removal
+for faster deterministic scenario editing.
 The Classic viewport inspector now also reports selected-creature context per
 cell, including previous/ahead/linked flags, remembered plant or creature
 entries in that square, and intel targeters currently pursuing it.
